@@ -1,0 +1,11 @@
+#mainHome{
+    width: 500px;
+    margin:auto;
+    margin-top: 2%;
+    height: 500px;
+    display:flex;
+    flex-direction: column;
+}
+#grid{
+    flex-grow: 1;
+}
