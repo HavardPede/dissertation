@@ -213,6 +213,7 @@ contract ItemContract is ERC721 {
         100 1
         80 2
         50
+        dd
 
         
         if (random == 0) {
