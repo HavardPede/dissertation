@@ -50,6 +50,8 @@ class App extends Component {
     }
   };
 
+
+  
   render() {
     if (!this.state.web3) {
       return (
