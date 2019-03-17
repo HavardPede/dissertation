@@ -1,0 +1,24 @@
+.item-box{
+    border: 2px solid #4B4B4B;
+    padding: 0px;
+    margin-left: 10px;
+    margin-right:10px;
+}
+.cont{
+    display: flex;
+    flex-direction: column;
+    padding:0px;
+    margin:0px;
+}
+.grid-row1{
+    flex-grow: 1;
+    margin:7px 0px 10px 0px;
+}
+.grid-row2{
+    flex-grow: 1;
+    margin:10px 0px 0px 0px;
+}
+#box{
+    display:flex;
+    height:100%;
+}

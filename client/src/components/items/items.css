@@ -1,0 +1,100 @@
+#heading{
+    text-align: left;
+}
+.selector{
+    border:0px;
+    border-bottom: 2px solid black;
+    padding-left: 0px;
+    font-size: 18px;
+    margin-right: 5px;
+}
+
+#inventory-button{
+    float:right;
+}
+#root{
+    width:100%;
+}
+
+
+#inventory{
+    height: 322px;
+    border: 3px solid black;
+    display:flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow: auto;
+    overflow-x: hidden;
+}
+
+#inventory::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	border-radius: 10px;
+	background-color: #F5F5F5;
+}
+
+#inventory::-webkit-scrollbar
+{
+	width: 12px;
+	background-color: #F5F5F5;
+}
+
+#inventory::-webkit-scrollbar-thumb
+{
+	border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+	background-color: #707070;
+}
+
+.invent-item{
+    height:80px;
+    width:80px;
+    border:2px solid black;
+    margin: 5px;
+    position:relative;
+}
+.invent-item img{
+    height:100%;
+}
+.invent-item:hover{
+    border: 4px solid red;
+}
+.invent-item-selected{
+    border: 5px solid red;
+}
+.invent-item-selected:hover{
+    border: 5px solid red;
+}
+.equipped{
+}
+.overlay{
+    width:100%;
+    height:100%;
+    background-color: black;
+    opacity: .7;
+    position: absolute;
+    color:white;
+    display:flex;
+}
+.equipped p{
+    margin:auto;
+    font-size: 25px;
+    -webkit-user-select: none; /* Safari */        
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+}
+.common{
+    background-image: linear-gradient(to bottom , grey, white);
+}
+.rare{
+    background-image: linear-gradient(to bottom , #599ADB, #B3D1EE);
+}
+.epic{
+    background-image: linear-gradient(to bottom , #6430A8, #9C7BC7);
+}
+.legendary{
+    background-image: linear-gradient(to bottom , #F7C548, #FBE4AB);
+}
