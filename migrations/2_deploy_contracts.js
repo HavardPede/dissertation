@@ -1,5 +1,5 @@
-var ItemContract = artifacts.require("./ItemContract.sol");
+var ItemOwnership = artifacts.require("./ItemOwnership.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(ItemContract);
+  deployer.deploy(ItemOwnership);
 };

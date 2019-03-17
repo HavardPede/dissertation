@@ -1,6 +1,7 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.0;
 
 import "./ERC.sol";
+
 
 /// @title ItemBase contract. Holds all types and events
 ///@author Håvard Pedersen, B6056952
@@ -9,9 +10,40 @@ contract ItemContract is ERC721 {
 
      /*** EVENTS ***/
 
-    ///@dev mintEvent is called whenever a new item is created. This includes createItem or 
+    ///@notice mintEvent is called whenever a new item is created. This includes createItem or 
     /// upgradeItem.
     event MintItem(address owner, uint id, uint equipmentType, uint16 img, uint16[2] stats, uint8 rarity);
+        
+    /// @notice This emits when ownership of any item changes by any mechanism.
+    ///  This event emits when items are created (`from` == 0) and destroyed
+    ///  (`to` == 0).
+    event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
+
+    /// @notice This emits when the approved address for an item is changed or
+    ///  reaffirmed. The zero address indicates there is no approved address.
+    ///  When a Transfer event emits, this also indicates that the approved
+    ///  address for that item (if any) is reset to none.
+    event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
+
+    /// @notice This emits when an operator is enabled or disabled for an owner.
+    ///  The operator can manage all items of the owner.
+    event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
+
+
+
+
+    /*** CONSTANTS ***/
+
+    ///@dev Information about each stat. the first two values are increments for 
+    ///Stat 1 and 2, the last two values are base rolls for stat 1 and two
+    uint8[4][6] internal statInformation = [
+        [50, 15, 100, 30], //Amulet
+        [50, 5, 150, 10],  //Helmet
+        [5, 15, 10, 30],  //Talisman
+        [70, 15, 50, 20], //Weapon 
+        [150, 8, 200, 20],  //Armor
+        [100, 10, 250, 35]  //Shield
+    ];
 
 
 
@@ -92,7 +124,7 @@ contract ItemContract is ERC721 {
         uint8 rarity,
         address owner
     ) {
-        Item memory item = users[_owner].items[_index];
+        Item storage item = users[_owner].items[_index];
         id = item.id;
         equipmentType = item.equipmentType;
         img = item.img;
@@ -104,7 +136,7 @@ contract ItemContract is ERC721 {
 
     function transferOwnership(address _from, address _to, uint _id) internal {
         //Store item locally
-        Item memory item = users[_from].items[users[_from].indexOfItem[_id]];
+        Item storage item = users[_from].items[users[_from].indexOfItem[_id]];
         require(users[_from].items.length > 0, "Account must have items to transfer from");
         //remove item from users list of items
         if (users[_from].items.length > 1) {
@@ -136,19 +168,19 @@ contract ItemContract is ERC721 {
     ///@param _owner the address of the lucky owner of this newly minted item
     ///@return returns the id of the new item
     function createItem(
-        uint equipmentType,
+        uint _equipmentType,
         uint16 _img,
         uint16 _stat1, 
         uint16 _stat2, 
         uint8 _rarity,
         address _owner
-    ) internal returns (uint) {
+    ) public returns (uint) {
         //Increment highest id in game. 
         //This will be the id of the new item
         ids++;
         
         //Locally store an item-struct with the given params
-        Item memory item = Item(ids, _img, [_stat1, _stat2], _rarity);
+        Item memory item = Item(ids, _equipmentType, _img, [_stat1, _stat2], _rarity);
 
         //Push item onto owners list of items and store the index to the item
         users[_owner].indexOfItem[ids] = users[_owner].items.push(item) - 1;
@@ -163,7 +195,7 @@ contract ItemContract is ERC721 {
         emit MintItem(
             _owner,
             ids,
-            equipmentType,
+            _equipmentType,
             _img,
             [_stat1, _stat2],
             _rarity
@@ -182,7 +214,7 @@ contract ItemContract is ERC721 {
 
         //remove item from users list of items
         if (users[_owner].items.length > 1) {
-            Item memory lastItem = users[_owner].items[users[_owner].items.length-1];
+            Item storage lastItem = users[_owner].items[users[_owner].items.length-1];
             users[_owner].items[users[_owner].indexOfItem[_id]] = lastItem;
             users[_owner].indexOfItem[lastItem.id] = users[_owner].indexOfItem[_id];
         }
@@ -202,41 +234,55 @@ contract ItemContract is ERC721 {
     }
 
     ///@dev this is the function called when upgrading items
-    function upgradeItems(address _account, uint _id1, uint _id2, uint _id3) internal {
+    function upgradeItems
+    (
+        address _account, 
+        uint _id1, 
+        uint _id2, 
+        uint _id3
+    ) public returns (uint _newID){
         uint rarity = users[_account].items[users[_account].indexOfItem[_id1]].rarity;
         uint random = uint(keccak256(abi.encodePacked(now, msg.sender, ids)));
-        bool upgrade = false;
-
-        if (random % 100 <= 100 - ) {
-            upgrade = true;
-        }
-        100 1
-        80 2
-        50
-        dd
-
-        
-        if (random == 0) {
-            random = _id1;
-        }else if (random == 1) {
-            random = _id2;
-        }else {
-            random = _id3;
-        }
-
-        Item memory itemBeingUpgraded = users[_account].items[users[_account].indexOfItem[random]];
     
+        //Choose which item base to potentially upgrade
+        uint chosenID = random % 3;
+        if (chosenID == 0) {
+            chosenID = _id1;
+        }else if (chosenID == 1) {
+            chosenID = _id2;
+        }else {
+            chosenID = _id3;
+        }
+        Item storage itemBeingUpgraded = users[_account].items[users[_account].indexOfItem[chosenID]];
+    
+        //Burn the items given for the upgrade
         deleteItem(_account, _id1);
         deleteItem(_account, _id2);
         deleteItem(_account, _id3);
-        
-        createItem(            
-            itemBeingUpgraded.img,
-            itemBeingUpgraded.stats[0] + 50,
-            itemBeingUpgraded.stats[1] + 1, 
-            itemBeingUpgraded.rarity + 1,
-            _account
-        );
-        
+
+        //Compute if new item will be minted
+        bool upgrade = false;
+        if (rarity == 1) {
+            upgrade = true;
+        }else if (rarity == 2 && (random % 100 > 19)) {
+            upgrade = true;
+        }else if (rarity == 3 && (random % 100 > 49)) {
+            upgrade = true;
+        }
+
+        if (upgrade) {
+            //Mint new item, based on selected item base
+            _newID = createItem(
+                itemBeingUpgraded.equipmentType,            
+                itemBeingUpgraded.img,
+                itemBeingUpgraded.stats[0] + statInformation[itemBeingUpgraded.equipmentType - 1][0],
+                itemBeingUpgraded.stats[1] + statInformation[itemBeingUpgraded.equipmentType - 1][1], 
+                itemBeingUpgraded.rarity + 1,
+                _account
+            );
+
+        }else{
+            _newID = 0;
+        }
     }
 }

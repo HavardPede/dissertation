@@ -1,4 +1,4 @@
-const ItemContract = artifacts.require("../contracts/ItemContract.sol");
+const ItemContract = artifacts.require("../contracts/ItemOwnerShip.sol");
 
 contract("ItemContract", accounts => {
 
