@@ -51,13 +51,11 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver {
         owner = msg.sender;
     }
 
-    /*** ERC IMPLEMENTATIONS ***/
-
 
     /*** NAIVE METHODS ***/
      
     /// @notice Count all items assigned to an owner.
-    /// @param _owner An address for whom to query the balance.
+    /// @param _account An address for whom to query the balance.
     /// @return The number of items owned by `_owner`, possibly zero.
     function balanceOf(address _account) external view returns (uint) {
         return users[_account].items.length;
@@ -66,7 +64,7 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver {
     /// [type][value], where type is weapon type, and value is either
     /// 0 (statIncrement for stat1), 1(statIncrement for stat2),
     /// 2 (Lowest roll for stat1), 3(Lowest roll for stat2).
-    function getStatInformation() external view returns(uint8[4][6] memory){
+    function getStatInformation() external view returns(uint8[4][6] memory) {
         return statInformation;
     }
 
@@ -120,14 +118,14 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver {
         address _from, 
         uint256 _tokenId, 
         bytes calldata _data
-    )external returns(bytes4){
+    )external returns(bytes4) {
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }    
 
     /*** SKEPTICAL METHODS ***/
 
     /// @notice Change or reaffirm the approved address for an item.
-    /// @param _approved The new approved item controller.
+    /// @param _to The new approved item controller.
     /// @param _id The item to approve.
     function approve(address _to, uint _id) external payable {       
         //Make sure its a valid id
@@ -166,7 +164,7 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver {
         address _from, 
         address _to,
         uint256 _id
-    ) public payable{
+    ) public payable {
         address itemOwner = ownerOfItem[_id];        
         //Make sure its a valid id
         itemIsInGame(_id);

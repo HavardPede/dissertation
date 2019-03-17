@@ -82,7 +82,7 @@ contract ItemContract is ERC721 {
     /*** STORAGE ***/
 
     ///@dev stores current highest id of item
-    uint ids; 
+    uint public ids; 
     
     ///@notice store current amount of items
     uint public numberOfItems;
@@ -111,7 +111,7 @@ contract ItemContract is ERC721 {
     /*** Functions ***/
 
     ///@dev Function to return an item given a user and the index of the item
-    ///@param _id Id of the item in question
+    ///@param _index Id of the item in question
     ///@return returns an array of the stats of the item
     ///@return [id, img, stats1, stats2, rarity]
     function getItem(address _owner, uint _index) internal view
@@ -162,7 +162,8 @@ contract ItemContract is ERC721 {
 
     ///@dev Function to mint a new item, store it in the owners array and send out events.
     ///@param _img the int that stores both item type and logic for what image to use.
-    ///@param _stat these two are the stats of the items, where they should be assigned to
+    ///@param _stat1 as stat2.
+    ///@param _stat2 these two are the stats of the items, where they should be assigned to
     /// stat[] as follows: [_stat1, _stat2].
     ///@param _rarity the rarity of the new item
     ///@param _owner the address of the lucky owner of this newly minted item
@@ -191,7 +192,7 @@ contract ItemContract is ERC721 {
         //Increment how many items currently exists
         numberOfItems++;
 
-        //Trigger mintItem-event to let listeners know new item was created
+        //Emit mintItem-event to let listeners know new item was created
         emit MintItem(
             _owner,
             ids,
@@ -200,6 +201,7 @@ contract ItemContract is ERC721 {
             [_stat1, _stat2],
             _rarity
         );
+        //emit transfer event
         emit Transfer(address(0), _owner, ids);
         return ids;
     }
@@ -207,7 +209,7 @@ contract ItemContract is ERC721 {
     ///@dev This function is used to remove an item from the game
     ///@param _owner this is not strickly necessary, as owner could easily be found.
     /// But passing it as a parameter adds an extra level of security to such a dire function.
-    function deleteItem(address _owner, uint _id) internal {
+    function deleteItem(address _owner, uint _id) public {
         //Check that the address given owns the item
         require(ownerOfItem[_id] == _owner, "That user dont own the item");
         require(users[_owner].items.length > 0, "Account must have items to remove fron");
@@ -229,7 +231,7 @@ contract ItemContract is ERC721 {
         //Let it be known that an item has been removed
         numberOfItems--;
 
-        //Set of event
+        //Emit tranfser event
         emit Transfer(_owner, address(0), _id);
     }
 
@@ -240,7 +242,7 @@ contract ItemContract is ERC721 {
         uint _id1, 
         uint _id2, 
         uint _id3
-    ) public returns (uint _newID){
+    ) public returns (uint _newID) {
         uint rarity = users[_account].items[users[_account].indexOfItem[_id1]].rarity;
         uint random = uint(keccak256(abi.encodePacked(now, msg.sender, ids)));
     
@@ -253,7 +255,7 @@ contract ItemContract is ERC721 {
         }else {
             chosenID = _id3;
         }
-        Item storage itemBeingUpgraded = users[_account].items[users[_account].indexOfItem[chosenID]];
+        Item memory itemBeingUpgraded = users[_account].items[users[_account].indexOfItem[chosenID]];
     
         //Burn the items given for the upgrade
         deleteItem(_account, _id1);
@@ -269,7 +271,6 @@ contract ItemContract is ERC721 {
         }else if (rarity == 3 && (random % 100 > 49)) {
             upgrade = true;
         }
-
         if (upgrade) {
             //Mint new item, based on selected item base
             _newID = createItem(
@@ -281,8 +282,9 @@ contract ItemContract is ERC721 {
                 _account
             );
 
-        }else{
+        } else {
             _newID = 0;
         }
+        _newID = 0;
     }
 }

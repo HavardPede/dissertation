@@ -8,7 +8,7 @@ contract("ItemContract", accounts => {
     let balanceBefore = await instance.balanceOf(accounts[1]);
     let itemsBefore = await instance.numberOfItems.call();
 
-    await instance.createItem(4001, 50, 2, 2, accounts[1]);
+    await instance.createItem(4, 1, 50, 2, 2, accounts[1]);
 
 
     assert.equal(balanceBefore, await instance.balanceOf(accounts[1]) - 1, "Item was not added to balance of the user");
@@ -30,16 +30,29 @@ contract("ItemContract", accounts => {
   })
 
 
-  it("Should upgrade an item properly", async () => {
+  it("Should remove 3 items and add a new when upgrading a common item", async () => {
     const instance = await ItemContract.deployed();
-    await instance.createItem(4001, 50, 2, 2, accounts[1]);
-    await instance.createItem(4001, 50, 2, 2, accounts[1]);
-    await instance.createItem(4001, 50, 2, 2, accounts[1]);
+    await instance.createItem(4, 1, 50, 2, 1, accounts[1]);
+    await instance.createItem(4, 1, 50, 2, 1, accounts[1]);
+    await instance.createItem(4, 1, 50, 2, 1, accounts[1]);
 
     let numberOfItemsBeforeUpgrade = await instance.numberOfItems.call();
- 
+
     await instance.upgradeItems(accounts[1], 2, 3, 4);
     let numberOfItemsAfterUpgrade = await instance.numberOfItems.call();
-    assert.equal(numberOfItemsBeforeUpgrade - 2, numberOfItemsAfterUpgrade, "Didnt upgrade items properly");
-})
+    assert(
+      numberOfItemsBeforeUpgrade - 2 == numberOfItemsAfterUpgrade,
+      "Didnt upgrade items properly"
+    );
+  })
+
+  it("Should upgrade an items stats properly", async () => {
+    const instance = await ItemContract.deployed();
+    await instance.createItem(4, 1, 50, 20, 1, accounts[1]);
+    await instance.createItem(4, 1, 50, 20, 1, accounts[1]);
+    await instance.createItem(4, 1, 50, 20, 1, accounts[1]);
+    await instance.upgradeItems(accounts[1], 6, 7, 8);
+    let item = await instance.getItemByID(accounts[1], 9);
+    assert(item[3] == 120, "Didnt upgrade item-stats properly");
+  })
 });
