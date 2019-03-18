@@ -55,4 +55,13 @@ contract("ItemContract", accounts => {
     let item = await instance.getItemByID(accounts[1], 9);
     assert(item[3] == 120, "Didnt upgrade item-stats properly");
   })
+
+  it("Should transfer ownership of item", async () => {
+    const instance = await ItemContract.deployed();
+    await instance.createItem(4, 1, 50, 20, 1, accounts[1]);
+    let owner = await instance.ownerOf(10);
+    await instance.transferOwnership(accounts[1], accounts[2], 10);
+    let newOwner = await instance.ownerOf(10);
+    assert(owner != newOwner && newOwner == accounts[2], "Didnt transfer item properly");
+  })
 });
