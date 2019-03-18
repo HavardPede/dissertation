@@ -136,7 +136,7 @@ contract ItemContract is ERC721 {
 
     function transferOwnership(address _from, address _to, uint _id) internal {
         //Store item locally
-        Item storage item = users[_from].items[users[_from].indexOfItem[_id]];
+        Item memory item = users[_from].items[users[_from].indexOfItem[_id]];
         require(users[_from].items.length > 0, "Account must have items to transfer from");
         //remove item from users list of items
         if (users[_from].items.length > 1) {
@@ -209,7 +209,7 @@ contract ItemContract is ERC721 {
     ///@dev This function is used to remove an item from the game
     ///@param _owner this is not strickly necessary, as owner could easily be found.
     /// But passing it as a parameter adds an extra level of security to such a dire function.
-    function deleteItem(address _owner, uint _id) public {
+    function deleteItem(address _owner, uint _id) internal {
         //Check that the address given owns the item
         require(ownerOfItem[_id] == _owner, "That user dont own the item");
         require(users[_owner].items.length > 0, "Account must have items to remove fron");
@@ -242,7 +242,7 @@ contract ItemContract is ERC721 {
         uint _id1, 
         uint _id2, 
         uint _id3
-    ) public returns (uint _newID) {
+    ) internal returns (uint _newID) {
         uint rarity = users[_account].items[users[_account].indexOfItem[_id1]].rarity;
         uint random = uint(keccak256(abi.encodePacked(now, msg.sender, ids)));
     

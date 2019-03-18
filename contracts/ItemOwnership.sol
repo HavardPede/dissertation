@@ -107,17 +107,12 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver {
         return size > 0;
     }
     /// @notice Handle the receipt of an NFT
-    /// @param _operator The address which called `safeTransferFrom` function
-    /// @param _from The address which previously owned the token
-    /// @param _tokenId The NFT identifier which is being transferred
-    /// @param _data Additional data with no specified format
     /// @return `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-    ///  unless throwing
     function onERC721Received(
-        address _operator, 
-        address _from, 
-        uint256 _tokenId, 
-        bytes calldata _data
+        address, 
+        address, 
+        uint256, 
+        bytes calldata
     )external returns(bytes4) {
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }    
