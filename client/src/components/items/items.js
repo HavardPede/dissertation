@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Button from "../Button/Button.js";
 import "./items.css";
-import { connect } from "react-redux";
+import { drizzleConnect } from "drizzle-react";
 import { setEquipSelector, setRaritySelector } from "../../actions/Selectors";
 
 class items extends Component {
@@ -132,4 +132,4 @@ const mapDispatchToProps = (dispatch) => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(items)
+export default drizzleConnect(items,mapStateToProps, mapDispatchToProps)

@@ -14,7 +14,6 @@ export default class Home extends Component {
                 <div id="mainHome" className="center">
                     <Logged />
                     <div id="grid">
-                        <ItemGrid />
                     </div>
                 </div>
                 <Footer />

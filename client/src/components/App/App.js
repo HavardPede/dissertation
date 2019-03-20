@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import SimpleStorageContract from "../../contracts/SimpleStorage.json";
+import contract from "../../contracts/ItemOwnership.json";
 import getWeb3 from "../../utils/getWeb3";
+import { drizzleConnect } from "drizzle-react";
+import PropTypes from "prop-types";
 
 //Components
 import Loader from "../Loader/Loader";
@@ -12,71 +14,66 @@ import Inventory from "../Pages/Inventory/Inventory";
 import Home from "../Pages/Home/Home";
 import Upgrade from "../Pages/Upgrade/Upgrade";
 import "./App.css";
-
-//redux
-import { setAccount } from '../../actions/accountAction';
-import { connect } from "react-redux";
-
-
 class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null };
-  
+  constructor(props, context) {
+    super(props);
+
+    this.drizzle = context.drizzle;
+    this.contracts = context.drizzle.contracts;
+  }
+
   componentDidMount = async () => {
     try {
-      // Get network provider and web3 instance.
+      //retrieve what network the webprovider is connected to
       const web3 = await getWeb3();
+      //Check to see if this is the same network as the contract is deployed to
+      await contract.networks[await web3.eth.net.getId()];
+      //Wait till drizzle is initialized
+      var state = this.drizzle.store.getState();
+      while (!state.drizzleStatus.initialized) {
+        const delay = new Promise(resolve => setTimeout(resolve, 500));
+        await delay;
+        state = this.drizzle.store.getState();
+      }
 
-      // Use web3 to get the user's accounts.
-      const accounts = await web3.eth.getAccounts();
-      this.props.setAccount(accounts[0]);
 
-      // Get the contract instance.
-      const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
-      const instance = new web3.eth.Contract(
-        SimpleStorageContract.abi,
-        deployedNetwork && deployedNetwork.address,
-      );
-
-      // Set web3, accounts, and contract to the state, and then proceed with an
-      // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`,
+        "Web3 provider is not set up correctly.\nUse Metamask to connect to network \"localhost:7545.\"",
       );
       console.error(error);
     }
   };
 
 
-  
   render() {
-    if (!this.state.web3) {
+    if (!this.props.drizzleStatus.initialized) {
       return (
         <Loader />
       );
     }
-    
+
     return (
-        <BrowserRouter>
-          <Switch>
-            <Route path="/" component={Home} exact />
-            <Route path="/inventory" component={Inventory} />
-            <Route path="/upgrade" component={Upgrade} />
-            <Route component={Error404} />
-          </Switch>
-        </BrowserRouter>
+      <BrowserRouter>
+        <Switch>
+          <Route path="/" component={Home} exact />
+          <Route path="/inventory" component={Inventory} />
+          <Route path="/upgrade" component={Upgrade} />
+          <Route component={Error404} />
+        </Switch>
+      </BrowserRouter>
     );
   }
 }
 
- const mapDispatchToProps = (dispatch) => {
+const mapStateToProps = state => {
   return {
-    setAccount: (account) => dispatch(setAccount(account))
+    account: state.accounts[0],
+    drizzleStatus: state.drizzleStatus
   }
 }
-
-
-export default connect(null, mapDispatchToProps) (App);
+App.contextTypes = {
+  drizzle: PropTypes.object,
+};
+export default drizzleConnect(App, mapStateToProps);

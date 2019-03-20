@@ -1,21 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './components/App/App';
-import * as serviceWorker from './serviceWorker';
 //Stylesheets
 import './index.css';
 
 //redux
-import { Provider } from "react-redux";
 import configureStore from "./store";
+import drizzleOptions from "./drizzleOptions";
+import { DrizzleProvider } from 'drizzle-react';
+import {Drizzle} from "drizzle";
+
+const drizzle = new Drizzle(drizzleOptions, configureStore());
 
 ReactDOM.render(
-    <Provider store={configureStore()}>
-        <App />
-    </Provider>, 
+    <DrizzleProvider drizzle={drizzle} options={drizzleOptions}>
+            <App />
+    </DrizzleProvider>, 
     document.getElementById('root'));
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.unregister();

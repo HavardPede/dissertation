@@ -49,7 +49,14 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver {
     address internal owner;
     constructor () public {
         owner = msg.sender;
+        createItem(4, 1, 50, 2, 2, 0x940819A549A6A5f5E55dAb8d4C4d0C6c045FfFAf);
+        createItem(4, 1, 50, 2, 2, 0x940819A549A6A5f5E55dAb8d4C4d0C6c045FfFAf);
+        createItem(4, 1, 50, 2, 2, 0x940819A549A6A5f5E55dAb8d4C4d0C6c045FfFAf);
+        createItem(4, 1, 50, 2, 2, 0x940819A549A6A5f5E55dAb8d4C4d0C6c045FfFAf);
     }
+
+
+
 
 
     /*** NAIVE METHODS ***/
