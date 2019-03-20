@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import Button from "../Button/Button.js";
 import "./items.css";
-import { drizzleConnect } from "drizzle-react";
-import { setEquipSelector, setRaritySelector } from "../../actions/Selectors";
 
 class items extends Component {
     constructor(props) {
@@ -12,12 +10,26 @@ class items extends Component {
         this.handleItemSelect = this.handleItemSelect.bind(this);
         this.handleEquipSelect = this.handleEquipSelect.bind(this);
         this.handleRaritySelect = this.handleRaritySelect.bind(this);
-        this.showRaritySelector = this.showRaritySelector.bind(this);
+        this.handleSetRarity = this.handleSetRarity.bind(this);
     }
     state = {
-        itemSelected: -1
+        itemSelected: -1,
+        rarity: "0",
+        type: "0",
+        showRaritySelector: true
     }
-
+    componentDidMount = async () => {
+        let id = this.props.chosenItems.find(item => {
+            return item !== -1;
+        })
+        if(id !== undefined){
+            let item = this.props.items.find(item => {
+                return item.id === id;
+            })
+            this.setState({rarity: item.rarity, showRaritySelector: false});
+        }
+    }
+    //function for when you press an item
     handleItemSelect(e) {
         const id = e.target.id
         var selected;
@@ -29,26 +41,31 @@ class items extends Component {
         this.setState({ itemSelected: selected })
         this.props.onItemSelect(selected);
     };
+    //Function for when a type is selected
     handleEquipSelect(e) {
-        this.props.setEquipSelector(e.target.value);
+        this.setState({ type: e.target.value });
     }
+    //Function for when rarity is selected
     handleRaritySelect(e) {
-        this.props.setRaritySelector(e.target.value)
+        this.setState({ rarity: e.target.value })
+    }
+    handleSetRarity(rarity) {
+        this.setState({ rarity });
     }
 
-
+    //Function to return an item image
     handlePresentItem(item) {
-        var rarity = this.props.raritySelector;
-        var type = this.props.equipSelector;
 
-        if (type === "0" || type === item.type) {
-            if (rarity === "0" || rarity === item.rarity) {
-                if (!this.props.chosenItems.includes(item.id)) {
+        var rarity = this.state.rarity;
+        var type = this.state.type;
+        if (type === "0" || type === item.type) { //correct type
+            if (rarity === "0" || rarity === item.rarity) { //correct rarity
+                if (!this.props.chosenItems.includes(item.id)) { //is not chosen 
                     return (
-                        <div className={item.rarity + " invent-item " + ((parseInt(this.state.itemSelected) === item.id) && " invent-item-selected") + " " + (item.equipped && "equipped")}
+                        <div className={item.rarity + " invent-item " + ((this.state.itemSelected === item.id) && " invent-item-selected") + " " + (item.equipped && "equipped")}
                             key={item.id} onClick={this.handleItemSelect}>
                             {item.equipped && <div className="overlay" id={item.id}><p>E</p></div>}
-                            <img src={item.image} alt={item.name} id={item.id}></img>
+                            <img src={"./images/" + item.type + "/" + item.image + ".png"} alt={item.name} id={item.id}></img>
                         </div>
                     )
                 } else return ""
@@ -56,43 +73,24 @@ class items extends Component {
         } else return ""
     }
 
-    showRaritySelector() {
-        const chosenItems = this.props.chosenItems;
-        var item = -1;
-        for (var i = 0; i < chosenItems.length; i++) {
-            if (chosenItems[i] !== -1) {
-                item = chosenItems[i];
-                break;
-            }
-        } if (this.props.parentPage === "inventory" || item === -1){
-            return true;
-        }else{
-            var chosen = this.props.items.find( (i) =>{
-                if(i.id === item) return i;
-            })
-            this.props.setRaritySelector(chosen.rarity);
-            return false;
-        }
-    }
-
     render() {
         return (
             <div>
                 <h5 id="heading">
                     {/*---------------- Equipment type selector ---------------- */}
-                    <select className="selector" value={this.props.equipSelector} onChange={this.handleEquipSelect}>
+                    <select className="selector" value={this.state.type} onChange={this.handleEquipSelect}>
                         <option value="0">Equipment type</option>
-                        <option value="helmet">Helmet</option>
-                        <option value="body">Body Armor</option>
-                        <option value="amulet">Amulet</option>
-                        <option value="weapon">weapon</option>
-                        <option value="trinket">Trinket</option>
-                        <option value="shield">Shield</option>
+                        <option value="2">Helmet</option>
+                        <option value="5">Body Armor</option>
+                        <option value="1">Amulet</option>
+                        <option value="4">weapon</option>
+                        <option value="3">Trinket</option>
+                        <option value="6">Shield</option>
                     </select>
 
-                    {/*---------------- Rarity selector ---------------- */}
-                    {this.showRaritySelector() &&
-                        <select className="selector" value={this.props.raritySelector} onChange={this.handleRaritySelect}>
+                    {/*---------------- Rarity selector ---------------- */console.log("yo")}
+                    {this.state.showRaritySelector &&
+                        <select className="selector" value={this.state.rarity} onChange={this.handleRaritySelect}>
                             <option value="0">Rarity</option>
                             <option value="common">Common</option>
                             <option value="rare">Rare</option>
@@ -117,19 +115,4 @@ class items extends Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        items: state.items,
-        equipSelector: state.equipSelector,
-        raritySelector: state.raritySelector,
-        chosenItems: state.chosenItems
-    }
-}
-const mapDispatchToProps = (dispatch) => {
-    return {
-        setEquipSelector: (value) => dispatch(setEquipSelector(value)),
-        setRaritySelector: (value) => dispatch(setRaritySelector(value))
-    }
-}
-
-export default drizzleConnect(items,mapStateToProps, mapDispatchToProps)
+export default items;

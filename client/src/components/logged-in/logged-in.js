@@ -5,7 +5,6 @@ import { drizzleConnect } from "drizzle-react";
 
 class Logged extends Component {
     render() {
-        console.log(this.props.state);
         return (
             <div>
                 <Container className="logged-in">

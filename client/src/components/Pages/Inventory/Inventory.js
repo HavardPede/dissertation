@@ -34,7 +34,13 @@ export default class Inventory extends Component {
                 <Container className="mainInventory">
                     <Row>
                         <Col xs="12" lg="7">
-                            <Items showButton={true} onItemSelect={this.handleItemSelect} parentPage="inventory"  />
+                            <Items 
+                                showButton={true} 
+                                onItemSelect={this.handleItemSelect} 
+                                items={this.props.items} 
+                                parentPage="inventory"
+                                chosenItems={[]}  
+                                />
                             {this.state.ItemSelected !== "" && <button type="button" className="standard-button">
                                 Equip/Unequip Item
                         </button>}
@@ -42,7 +48,7 @@ export default class Inventory extends Component {
                         <Col xs="5">
                             <h4 id="titleInventory">Equipment</h4>
                             <div id="equipment">
-                                <Grid width="300px" />
+                                {/*<Grid width="300px" />*/}
                             </div>
                         </Col>
                     </Row>

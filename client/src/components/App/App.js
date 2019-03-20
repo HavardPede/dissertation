@@ -1,41 +1,43 @@
 import React, { Component } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import contract from "../../contracts/ItemOwnership.json";
-import getWeb3 from "../../utils/getWeb3";
 import { drizzleConnect } from "drizzle-react";
 import PropTypes from "prop-types";
-
+import Item from "../../utils/item";
 //Components
-import Loader from "../Loader/Loader";
 import Error404 from "../Errors/404";
+import Loader from "../Loader/Loader";
 
 //Page-imports
 import Inventory from "../Pages/Inventory/Inventory";
 import Home from "../Pages/Home/Home";
 import Upgrade from "../Pages/Upgrade/Upgrade";
 import "./App.css";
+
+
 class App extends Component {
   constructor(props, context) {
     super(props);
-
     this.drizzle = context.drizzle;
     this.contracts = context.drizzle.contracts;
+
+    this.setBalance = this.setBalance.bind(this);
+    this.generateItem = this.generateItem.bind(this);
+    this.setItemKeyList = this.setItemKeyList.bind(this);
+    this.setItemList = this.setItemList.bind(this);
+    this.rarity = ["common", "rare", "epic", "legendary"];
+    this.state = {
+      balanceKey: null,
+      itemKeys: null,
+      balance: "",
+      items: []
+    }
   }
 
   componentDidMount = async () => {
     try {
-      //retrieve what network the webprovider is connected to
-      const web3 = await getWeb3();
-      //Check to see if this is the same network as the contract is deployed to
-      await contract.networks[await web3.eth.net.getId()];
-      //Wait till drizzle is initialized
-      var state = this.drizzle.store.getState();
-      while (!state.drizzleStatus.initialized) {
-        const delay = new Promise(resolve => setTimeout(resolve, 500));
-        await delay;
-        state = this.drizzle.store.getState();
-      }
-
+      const balanceKey = this.contracts.ItemOwnership.methods.balanceOf.cacheCall(this.props.account);
+      this.setState({ balanceKey });
+      this.setBalance();
 
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -45,32 +47,87 @@ class App extends Component {
       console.error(error);
     }
   };
+  componentDidUpdate(prevProps, prevState) {
+    //If balanceOf is in drizzle-state, update local value
+    if (this.props.state.balanceOf !== prevProps.state.balanceOf) {
+      console.log("set balance got called")
+      this.setBalance()
+    }
+    //If the balance is changed, upload items anew
+    if (this.state.balance !== prevState.balance) {
+      console.log("setItemKeyList got called")
+      this.setItemKeyList();
+    }
+    if (this.props.state.getItemByIndex !== prevProps.state.getItemByIndex && this.state.balance > 0) {
+      console.log("setItemList got called")
+      this.setItemList();
+    }
+  }
 
+  //function to set balance of account
+  setBalance() {
+    if (this.state.balanceKey in this.props.state.balanceOf && this.state.balanceKey !== null) {
+      this.setState({
+        balance: this.props.state.balanceOf[this.state.balanceKey].value
+      });
+    }
+  }
+  //function to set the array of itemKeys, based on balance
+  setItemKeyList() {
+    let itemKeys = [];
+    let key;
+    for (let i = 0; i < this.state.balance; i++) {
+      key = this.contracts.ItemOwnership.methods.getItemByIndex.cacheCall(this.props.account, i);
+      itemKeys.push(key)
+    }
+    this.setState({ itemKeys });
+  }
+  //function to set the list of items, based on itemKeys
+  setItemList() {
+    let lastItemKey = this.state.itemKeys[this.state.itemKeys.length - 1];
+    if (lastItemKey in this.props.state.getItemByIndex && this.state.balance !== this.state.items.length) {
+      let items = [];
+      for (let i = 0; i < this.state.itemKeys.length; i++) {
+        let itemStats = this.props.state.getItemByIndex[this.state.itemKeys[i]].value;
+        let item = this.generateItem(itemStats);
+        console.log(item);
+        items.push(item);
+      }
+      this.setState({ items });
+    }
+  }
+  generateItem(key) {
+    return new Item(
+      key.id,
+      key.equipmentType,
+      key.img,
+      [key.stat1, key.stat2],
+      this.rarity[key.rarity - 1]
+    );
+  }
 
   render() {
-    if (!this.props.drizzleStatus.initialized) {
+    if (this.state.items.length === parseInt(this.state.balance)) {
       return (
-        <Loader />
+        <BrowserRouter>
+          <Switch>
+            <Route path="/" component={Home} exact />
+            <Route path="/inventory" ><Inventory items={this.state.items} /></Route>
+            <Route path="/upgrade" ><Upgrade items={this.state.items} /></Route>
+            <Route component={Error404} />
+          </Switch>
+        </BrowserRouter>
       );
     }
-
-    return (
-      <BrowserRouter>
-        <Switch>
-          <Route path="/" component={Home} exact />
-          <Route path="/inventory" component={Inventory} />
-          <Route path="/upgrade" component={Upgrade} />
-          <Route component={Error404} />
-        </Switch>
-      </BrowserRouter>
-    );
+    return <Loader show={true} /> //Show loading animation till items are fetched
   }
 }
 
 const mapStateToProps = state => {
   return {
     account: state.accounts[0],
-    drizzleStatus: state.drizzleStatus
+    drizzleStatus: state.drizzleStatus,
+    state: state.contracts.ItemOwnership
   }
 }
 App.contextTypes = {

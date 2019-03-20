@@ -6,13 +6,16 @@ import ButtonC from "../../Button/Button";
 import Items from "../../items/items";
 import ChosenItem from "../../ChosenItem/ChosenItem";
 import "./Upgrade.css";
-import { connect } from "react-redux";
-import { chosenItems } from "../../../actions/chosenItems";
+import PropTypes from "prop-types";
+import { drizzleConnect } from "drizzle-react";
 
 
 class Upgrade extends Component {
-    constructor(props) {
+    constructor(props, context) {
         super(props);
+
+        this.drizzle = context.drizzle;
+        this.contracts = this.drizzle.contracts;
 
         this.toggle = this.toggle.bind(this);
         this.toggleClose = this.toggleClose.bind(this);
@@ -21,12 +24,13 @@ class Upgrade extends Component {
         this.handleBoxUpdate = this.handleBoxUpdate.bind(this);
         this.handleRemoveItem = this.handleRemoveItem.bind(this);
     }
-
     state = {
         modal: false,
         boxSelected: "", //Index of box selected, number
-        itemSelected: ""
+        itemSelected: "",
+        chosenItems: [-1, -1, -1]
     };
+
     //Open modal
     toggle(e) {
         this.setState({ boxSelected: e.currentTarget.getAttribute("boxindex") });
@@ -48,11 +52,13 @@ class Upgrade extends Component {
     }
     //Update chosenItems with a new item
     handleChooseItem(index, item) {
-        this.props.setChosenItems(index, item)
+        let chosenItems = this.state.chosenItems;
+        chosenItems[index] = item;
+        this.setState({ chosenItems });
     }
     //"select"-button in modal
     handleBoxUpdate() {
-        this.handleChooseItem(parseInt(this.state.boxSelected), parseInt(this.state.itemSelected));
+        this.handleChooseItem(parseInt(this.state.boxSelected), this.state.itemSelected);
         this.toggleClose();
     }
     //"remove item"-button in modal
@@ -60,6 +66,17 @@ class Upgrade extends Component {
         this.handleChooseItem(parseInt(this.state.boxSelected), -1);
         this.toggleClose();
     }
+    //function to upgrade 3 items
+    handleUpgradeItems() {
+        this.contracts.ItemOwnership.methods.upgrade
+        .cacheSend(
+            this.props.account, 
+            this.state.chosenItems[0],
+            this.state.choseItems[1],
+            this.state.choseItems[2]
+        );
+    }
+
 
     render() {
         return (
@@ -72,22 +89,22 @@ class Upgrade extends Component {
                     {/*---------------- 3 BOXES ---------------- */}
                     <Row className="upgrade-row">
                         {/*------- ITEM 1 -------*/}
-                        <Col className="item-box-upgrade" id="box1" onClick={this.toggle} boxindex="0" xs="7" lg="3">
-                            <ChosenItem index="0" boxindex="0" />
+                        <Col className="item-box-upgrade" onClick={this.toggle} boxindex="0" xs="7" lg="3">
+                            <ChosenItem index="0" boxindex="0" chosenItems={this.state.chosenItems} items={this.props.items} />
                         </Col>
                         {/*------- ITEM 2 -------*/}
                         <Col className="item-box-upgrade" onClick={this.toggle} boxindex="1" xs="7" lg="3">
-                            <ChosenItem index="1" boxindex="1" items={this.state.Items} />
+                            <ChosenItem index="1" boxindex="1" chosenItems={this.state.chosenItems} items={this.props.items} />
                         </Col>
                         {/*------- ITEM 3 -------*/}
                         <Col className="item-box-upgrade" onClick={this.toggle} boxindex="2" xs="7" lg="3">
-                            <ChosenItem index="2" boxindex="2" items={this.state.Items} />
+                            <ChosenItem index="2" boxindex="2" chosenItems={this.state.chosenItems} items={this.props.items} />
                         </Col>
                     </Row>
 
                     {/*---------------- UPGRADE BUTTON ---------------- */}
                     <Row id="upgrade-button-row">
-                        {!this.props.chosenItems.includes(-1) && <ButtonC text="Upgrade" link="/Success" />}
+                        {!this.state.chosenItems.includes(-1) && <ButtonC text="Upgrade" onClick={this.handleUpgradeItems} />}
                     </Row>
                 </Container>
 
@@ -100,10 +117,16 @@ class Upgrade extends Component {
                         Inventory
                     </ModalHeader>
                     <ModalBody>
-                        <Items showButton={false} onItemSelect={this.handleItemSelect} parentPage ="upgrade" />
+                        <Items
+                            showButton={false}
+                            onItemSelect={this.handleItemSelect}
+                            items={this.props.items}
+                            parentPage="upgrade"
+                            chosenItems={this.state.chosenItems}
+                        />
                     </ModalBody>
                     <ModalFooter>
-                        {this.props.chosenItems[this.state.boxSelected] !== -1 && <Button className="modalButton" id="removeButton" onClick={this.handleRemoveItem}>Remove item</Button>}
+                        {this.state.chosenItems[this.state.boxSelected] !== -1 && <Button className="modalButton" id="removeButton" onClick={this.handleRemoveItem}>Remove item</Button>}
                         <Button className="modalButton" onClick={this.handleBoxUpdate}>Select</Button>
                         <Button className="modalButton" onClick={this.toggle}>Cancel</Button>
                     </ModalFooter>
@@ -112,15 +135,13 @@ class Upgrade extends Component {
         )
     }
 }
-function mapStateToProps(state){
+const mapStateToProps = state => {
     return {
-        chosenItems: state.chosenItems
+        account: state.accounts[0],
+        state: state.contracts.ItemOwnership
     }
 }
-const mapDispatchToProps = (dispatch) => {
-    return{
-        setChosenItems: (index, id) => dispatch( chosenItems(index, id) )
-    }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Upgrade);
+Upgrade.contextTypes = {
+    drizzle: PropTypes.object,
+};
+export default drizzleConnect(Upgrade, mapStateToProps);

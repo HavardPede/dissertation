@@ -45,7 +45,7 @@ contract ERC165Implementation is ERC165 {
 ///@author Håvard Pedersen, B6056952.
 ///@dev This will implement and make use of
 /// functions, events, and storages defined in its parent-contracts.
-contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver {
+contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Implementation {
     address internal owner;
     constructor () public {
         owner = msg.sender;

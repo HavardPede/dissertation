@@ -1,12 +1,10 @@
 export default class item{
-    constructor(id, name, image, type, stats, rarity, equipped){
+    constructor(id, type, image, stats, rarity){
         this.id = id;
-        this.name = name;
-        this.image = image;
         this.type = type;
+        this.image = image;
         this.stats = stats;
         this.rarity = rarity;
-        this.equipped = equipped;
     }
     getName(){
         return this.name

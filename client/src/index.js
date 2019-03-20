@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import App from './components/App/App';
 //Stylesheets
 import './index.css';
+import Loader from "./components/Loader/Loader";
 
 //redux
 import configureStore from "./store";
@@ -14,6 +15,8 @@ const drizzle = new Drizzle(drizzleOptions, configureStore());
 
 ReactDOM.render(
     <DrizzleProvider drizzle={drizzle} options={drizzleOptions}>
+        <Loader>
             <App />
+        </Loader>
     </DrizzleProvider>, 
     document.getElementById('root'));
