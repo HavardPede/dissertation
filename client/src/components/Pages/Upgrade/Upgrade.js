@@ -2,12 +2,12 @@ import React, { Component } from "react";
 import Navbar from "../../Navbar/Navbar";
 import Footer from "../../Footer/Footer"
 import { Modal, Container, Row, Col, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
-import ButtonC from "../../Button/Button";
 import Items from "../../items/items";
 import ChosenItem from "../../ChosenItem/ChosenItem";
 import "./Upgrade.css";
 import PropTypes from "prop-types";
 import { drizzleConnect } from "drizzle-react";
+import { Link } from "react-router-dom";
 
 
 class Upgrade extends Component {
@@ -23,14 +23,14 @@ class Upgrade extends Component {
         this.handleChooseItem = this.handleChooseItem.bind(this);
         this.handleBoxUpdate = this.handleBoxUpdate.bind(this);
         this.handleRemoveItem = this.handleRemoveItem.bind(this);
+        this.handleUpgradeItems = this.handleUpgradeItems.bind(this);
     }
     state = {
         modal: false,
         boxSelected: "", //Index of box selected, number
         itemSelected: "",
         chosenItems: [-1, -1, -1]
-    };
-
+    }
     //Open modal
     toggle(e) {
         this.setState({ boxSelected: e.currentTarget.getAttribute("boxindex") });
@@ -68,15 +68,15 @@ class Upgrade extends Component {
     }
     //function to upgrade 3 items
     handleUpgradeItems() {
-        this.contracts.ItemOwnership.methods.upgrade
-        .cacheSend(
-            this.props.account, 
-            this.state.chosenItems[0],
-            this.state.choseItems[1],
-            this.state.choseItems[2]
-        );
+        this.contracts.ItemOwnership.methods.upgradeItems
+            .cacheSend(
+                this.props.account,
+                parseInt(this.state.chosenItems[0]),
+                parseInt(this.state.chosenItems[1]),
+                parseInt(this.state.chosenItems[2])
+            );
+        this.props.upgradeEvent();
     }
-
 
     render() {
         return (
@@ -104,44 +104,47 @@ class Upgrade extends Component {
 
                     {/*---------------- UPGRADE BUTTON ---------------- */}
                     <Row id="upgrade-button-row">
-                        {!this.state.chosenItems.includes(-1) && <ButtonC text="Upgrade" onClick={this.handleUpgradeItems} />}
+                        {!this.state.chosenItems.includes(-1) &&
+                            <Link to="/result">
+                                <Button className="standard-button" onClick={this.handleUpgradeItems}>Upgrade </Button>
+                        </Link>}
                     </Row>
                 </Container>
 
-                {/*---------------- FOOTER ---------------- */}
-                <Footer />
+                    {/*---------------- FOOTER ---------------- */}
+                    <Footer />
 
-                {/*---------------- MODAL ---------------- */}
-                <Modal isOpen={this.state.modal} toggle={this.toggleClose} size="lg">
-                    <ModalHeader toggle={this.toggleClose} className="Modal">
-                        Inventory
+                    {/*---------------- MODAL ---------------- */}
+                    <Modal isOpen={this.state.modal} toggle={this.toggleClose} size="lg">
+                        <ModalHeader toggle={this.toggleClose} className="Modal">
+                            Inventory
                     </ModalHeader>
-                    <ModalBody>
-                        <Items
-                            showButton={false}
-                            onItemSelect={this.handleItemSelect}
-                            items={this.props.items}
-                            parentPage="upgrade"
-                            chosenItems={this.state.chosenItems}
-                        />
-                    </ModalBody>
-                    <ModalFooter>
-                        {this.state.chosenItems[this.state.boxSelected] !== -1 && <Button className="modalButton" id="removeButton" onClick={this.handleRemoveItem}>Remove item</Button>}
-                        <Button className="modalButton" onClick={this.handleBoxUpdate}>Select</Button>
-                        <Button className="modalButton" onClick={this.toggle}>Cancel</Button>
-                    </ModalFooter>
-                </Modal>
+                        <ModalBody>
+                            <Items
+                                showButton={false}
+                                onItemSelect={this.handleItemSelect}
+                                items={this.props.items}
+                                parentPage="upgrade"
+                                chosenItems={this.state.chosenItems}
+                            />
+                        </ModalBody>
+                        <ModalFooter>
+                            {this.state.chosenItems[this.state.boxSelected] !== -1 && <Button className="modalButton" id="removeButton" onClick={this.handleRemoveItem}>Remove item</Button>}
+                            <Button className="modalButton" onClick={this.handleBoxUpdate}>Select</Button>
+                            <Button className="modalButton" onClick={this.toggle}>Cancel</Button>
+                        </ModalFooter>
+                    </Modal>
             </div>
-        )
-    }
-}
+                )
+            }
+        }
 const mapStateToProps = state => {
     return {
-        account: state.accounts[0],
-        state: state.contracts.ItemOwnership
-    }
-}
+                    account: state.accounts[0],
+                state: state.contracts.ItemOwnership
+            }
+        }
 Upgrade.contextTypes = {
-    drizzle: PropTypes.object,
-};
+                    drizzle: PropTypes.object,
+            };
 export default drizzleConnect(Upgrade, mapStateToProps);

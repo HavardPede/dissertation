@@ -1,0 +1,31 @@
+#filter-selector{
+    width: 100%;
+    border:0px;
+    border: 2px solid black;
+    padding-left: 0px;
+    font-size: 18px;
+    margin-right: 5px;
+    float:left;
+}
+.filter-row{
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #4B4B4B;
+}
+.filter-bottom-row{
+    border:0px;
+}
+.price-input{
+    -webkit-appearance: none;
+    border: 2px solid #4B4B4B;
+}
+.price-input:focus{
+    border: 2px solid #4B4B4B;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+.filter{
+    border:0px solid #4B4B4B;
+}

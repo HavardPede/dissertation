@@ -10,9 +10,8 @@ contract ItemContract is ERC721 {
 
      /*** EVENTS ***/
 
-    ///@notice mintEvent is called whenever a new item is created. This includes createItem or 
-    /// upgradeItem.
-    event MintItem(address owner, uint id, uint equipmentType, uint16 img, uint16[2] stats, uint8 rarity);
+    ///@notice Upgrade is called when upgrade-function is called. ID is 0 if upgrade failed
+    event Upgrade(address owner, uint id);
         
     /// @notice This emits when ownership of any item changes by any mechanism.
     ///  This event emits when items are created (`from` == 0) and destroyed
@@ -179,31 +178,22 @@ contract ItemContract is ERC721 {
         //Increment highest id in game. 
         //This will be the id of the new item
         ids++;
-        
+        uint id = ids;
         //Locally store an item-struct with the given params
-        Item memory item = Item(ids, _equipmentType, _img, [_stat1, _stat2], _rarity);
+        Item memory item = Item(id, _equipmentType, _img, [_stat1, _stat2], _rarity);
 
         //Push item onto owners list of items and store the index to the item
-        users[_owner].indexOfItem[ids] = users[_owner].items.push(item) - 1;
+        users[_owner].indexOfItem[id] = users[_owner].items.push(item) - 1;
 
         //Set owner of item
-        ownerOfItem[ids] = _owner;
+        ownerOfItem[id] = _owner;
 
         //Increment how many items currently exists
         numberOfItems++;
 
-        //Emit mintItem-event to let listeners know new item was created
-        emit MintItem(
-            _owner,
-            ids,
-            _equipmentType,
-            _img,
-            [_stat1, _stat2],
-            _rarity
-        );
         //emit transfer event
-        emit Transfer(address(0), _owner, ids);
-        return ids;
+        emit Transfer(address(0), _owner, id);
+        return id;
     }
 
     ///@dev This function is used to remove an item from the game
@@ -214,22 +204,24 @@ contract ItemContract is ERC721 {
         require(ownerOfItem[_id] == _owner, "That user dont own the item");
         require(users[_owner].items.length > 0, "Account must have items to remove fron");
 
+        User storage user = users[_owner];
         //remove item from users list of items
-        if (users[_owner].items.length > 1) {
-            Item storage lastItem = users[_owner].items[users[_owner].items.length-1];
-            users[_owner].items[users[_owner].indexOfItem[_id]] = lastItem;
-            users[_owner].indexOfItem[lastItem.id] = users[_owner].indexOfItem[_id];
+        
+        if (true) {
+            uint id = user.items[user.items.length - 1].id;
+            user.items[user.indexOfItem[_id]] = user.items[user.items.length - 1]; //Overwrite item to be removed
+            user.indexOfItem[id] = users[_owner].indexOfItem[_id]; //Correct index
         }
-        users[_owner].items.length--;
+        users[_owner].items.length--; //Remove last element in array
 
         //remove item from list of item-indexes
-        delete users[_owner].indexOfItem[_id];
+        delete users[_owner].indexOfItem[_id]; //remove index of deleted item
         
         //Remove map-element in ownerOfItem
-        delete ownerOfItem[_id];
+        delete ownerOfItem[_id]; //remove ownerOf
         
         //Let it be known that an item has been removed
-        numberOfItems--;
+        numberOfItems--; //decrement numberOfItems
 
         //Emit tranfser event
         emit Transfer(_owner, address(0), _id);
@@ -242,7 +234,7 @@ contract ItemContract is ERC721 {
         uint _id1, 
         uint _id2, 
         uint _id3
-    ) internal returns (uint _newID) {
+    ) public {
         uint rarity = users[_account].items[users[_account].indexOfItem[_id1]].rarity;
         uint random = uint(keccak256(abi.encodePacked(now, msg.sender, ids)));
     
@@ -255,13 +247,15 @@ contract ItemContract is ERC721 {
         }else {
             chosenID = _id3;
         }
+        chosenID = _id3;
         Item memory itemBeingUpgraded = users[_account].items[users[_account].indexOfItem[chosenID]];
-    
+        
         //Burn the items given for the upgrade
+        
         deleteItem(_account, _id1);
         deleteItem(_account, _id2);
         deleteItem(_account, _id3);
-
+        
         //Compute if new item will be minted
         bool upgrade = false;
         if (rarity == 1) {
@@ -273,7 +267,7 @@ contract ItemContract is ERC721 {
         }
         if (upgrade) {
             //Mint new item, based on selected item base
-            _newID = createItem(
+            uint newID = createItem(
                 itemBeingUpgraded.equipmentType,            
                 itemBeingUpgraded.img,
                 itemBeingUpgraded.stats[0] + statInformation[itemBeingUpgraded.equipmentType - 1][0],
@@ -281,10 +275,11 @@ contract ItemContract is ERC721 {
                 itemBeingUpgraded.rarity + 1,
                 _account
             );
-
-        } else {
-            _newID = 0;
+            //Emit mintItem-event to let listeners know new item was created
+            emit Upgrade(_account, newID);
+        } else {            
+            //Emit Upgrade-event with fail-indication
+            emit Upgrade(_account, 0);
         }
-        _newID = 0;
     }
 }

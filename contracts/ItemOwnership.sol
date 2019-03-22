@@ -49,10 +49,6 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
     address internal owner;
     constructor () public {
         owner = msg.sender;
-        createItem(4, 1, 50, 2, 2, 0x940819A549A6A5f5E55dAb8d4C4d0C6c045FfFAf);
-        createItem(4, 1, 50, 2, 2, 0x940819A549A6A5f5E55dAb8d4C4d0C6c045FfFAf);
-        createItem(4, 1, 50, 2, 2, 0x940819A549A6A5f5E55dAb8d4C4d0C6c045FfFAf);
-        createItem(4, 1, 50, 2, 2, 0x940819A549A6A5f5E55dAb8d4C4d0C6c045FfFAf);
     }
 
 
@@ -268,7 +264,7 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
     }
     
     function upgrade(address _owner, uint _id1, uint _id2, uint _id3) 
-    external returns (uint) {
+    external {
         User storage user = users[_owner];
         //check that items are all owned by the given address
         require(
@@ -303,8 +299,8 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
             rarity != 4,
             "The items must not be legendary"
         );
-        //call upgrade
-        return upgradeItems(_owner, _id1, _id2, _id3);
+        //upgrade items
+        upgradeItems(_owner, _id1, _id2, _id3);
     }
 
 }

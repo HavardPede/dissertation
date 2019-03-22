@@ -1,16 +1,23 @@
 import React, { Component } from "react";
-import Button from "../Button/Button.js";
+import StandardButton from "../Button/Button.js";
 import "./items.css";
+import PropTypes from "prop-types";
+import { drizzleConnect } from "drizzle-react";
+import { Button, Tooltip, Container, Row, Col } from "reactstrap";
 
 class items extends Component {
-    constructor(props) {
+    constructor(props, context) {
         super(props)
 
+        this.drizzle = context.drizzle;
+        this.contracts = this.drizzle.contracts;
         this.handlePresentItem = this.handlePresentItem.bind(this);
         this.handleItemSelect = this.handleItemSelect.bind(this);
         this.handleEquipSelect = this.handleEquipSelect.bind(this);
         this.handleRaritySelect = this.handleRaritySelect.bind(this);
         this.handleSetRarity = this.handleSetRarity.bind(this);
+        this.createItem = this.createItem.bind(this);
+        this.type = ["Amulet", "Helmet", "Trinket", "Weapon", "Body", "Shield"];
     }
     state = {
         itemSelected: -1,
@@ -22,11 +29,11 @@ class items extends Component {
         let id = this.props.chosenItems.find(item => {
             return item !== -1;
         })
-        if(id !== undefined){
+        if (id !== undefined) {
             let item = this.props.items.find(item => {
                 return item.id === id;
             })
-            this.setState({rarity: item.rarity, showRaritySelector: false});
+            this.setState({ rarity: item.rarity, showRaritySelector: false });
         }
     }
     //function for when you press an item
@@ -52,6 +59,11 @@ class items extends Component {
     handleSetRarity(rarity) {
         this.setState({ rarity });
     }
+    createItem() {
+        for(let i = 0; i <= 3; i++) {
+            this.contracts.ItemOwnership.methods.createItem.cacheSend(6, 2, 50, 2, 2, this.props.account);
+        }  
+    }
 
     //Function to return an item image
     handlePresentItem(item) {
@@ -62,10 +74,39 @@ class items extends Component {
             if (rarity === "0" || rarity === item.rarity) { //correct rarity
                 if (!this.props.chosenItems.includes(item.id)) { //is not chosen 
                     return (
-                        <div className={item.rarity + " invent-item " + ((this.state.itemSelected === item.id) && " invent-item-selected") + " " + (item.equipped && "equipped")}
-                            key={item.id} onClick={this.handleItemSelect}>
-                            {item.equipped && <div className="overlay" id={item.id}><p>E</p></div>}
-                            <img src={"./images/" + item.type + "/" + item.image + ".png"} alt={item.name} id={item.id}></img>
+                        <div 
+                            className={
+                                item.rarity + " invent-item " + 
+                                ((this.state.itemSelected === item.id) && 
+                                " invent-item-selected") + " " + 
+                                (item.equipped && "equipped")
+                            }
+                            key={item.id} 
+                            id={item.id} 
+                            onClick={this.handleItemSelect}
+                        >
+                            {//IF equipped items get implemented again, uncomment this
+                            //item.equipped && <div className="overlay" id={item.id}><p>E</p></div>
+                            }
+                            <img src={"./images/" + item.type + "/" + item.image + ".png"} alt={item.name} id={item.id} ></img>
+                            <Container className="tooltip">
+                                <Row>
+                                    <Col className="col-5">Type:</Col>
+                                    <Col >{this.type[item.type - 1]}</Col>
+                                </Row>
+                                <Row>
+                                    <Col className="col-5">Rarity:</Col>
+                                    <Col >{item.rarity}</Col>
+                                </Row>
+                                <Row>
+                                    <Col className="col-5">Stat1:</Col>
+                                    <Col >{item.stats[0]}</Col>
+                                </Row>
+                                <Row>
+                                    <Col className="col-5">Stat2:</Col>
+                                    <Col >{item.stats[1]}</Col>
+                                </Row>
+                            </Container>
                         </div>
                     )
                 } else return ""
@@ -88,7 +129,7 @@ class items extends Component {
                         <option value="6">Shield</option>
                     </select>
 
-                    {/*---------------- Rarity selector ---------------- */console.log("yo")}
+                    {/*---------------- Rarity selector ---------------- */}
                     {this.state.showRaritySelector &&
                         <select className="selector" value={this.state.rarity} onChange={this.handleRaritySelect}>
                             <option value="0">Rarity</option>
@@ -99,11 +140,10 @@ class items extends Component {
                         </select>
                     }
                     {/*---------------- Button top right ---------------- */}
-                    {this.props.showButton &&
-                        <div id="inventory-button">
-                            <Button text="Upgrade" link="/upgrade" />
-                        </div>
-                    }
+                    <Button type="button" onClick={this.createItem} className="standard-button"> Create New Item </Button>
+                    <div id="inventory-button">
+                        {this.props.showButton && <StandardButton text="Upgrade" link="/upgrade" />}
+                    </div>
                 </h5>
 
                 {/*---------------- Inventory box ---------------- */}
@@ -114,5 +154,13 @@ class items extends Component {
         )
     }
 }
-
-export default items;
+const mapStateToProps = state => {
+    return {
+        account: state.accounts[0],
+        state: state.contracts.ItemOwnership
+    }
+}
+items.contextTypes = {
+    drizzle: PropTypes.object,
+};
+export default drizzleConnect(items, mapStateToProps);

@@ -17,10 +17,7 @@ export default class Navb extends Component {
                             <NavLink tag={Link} to="/upgrade" className="text-white nav-elem">UPGRADE</NavLink>
                         </NavItem>
                         <NavItem>
-                            <NavLink tag={Link} to="/trade" className="text-white nav-elem">TRADE</NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink tag={Link} to="/shop" className="text-white nav-elem">SHOP</NavLink>
+                            <NavLink tag={Link} to="/auction-house" className="text-white nav-elem">AUCTION HOUSE</NavLink>
                         </NavItem>
 
                     </Nav>

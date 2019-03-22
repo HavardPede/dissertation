@@ -1,0 +1,42 @@
+#loading-image{
+    margin:auto;
+    position: absolute;
+    top: 0;
+    bottom:0;
+    right: 0;
+    left: 0;
+    width:200px;
+    height:200px;
+}
+#DisplayItemBox{
+    border: 2px solid #4B4B4B;
+    margin: auto;
+    height: 210px;
+    width: 150px;
+    margin-top: 10%;
+}
+.return-button{
+    background-color: #FB2652;
+    color:white;
+    border: 0px;
+    font-size: 20px;
+    border-radius: 30px;
+    padding: 10px 20px 10px 20px;
+    margin-top: 20px;
+}
+.mainBoxResult{
+    width: 700px;
+    margin: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    height: 150px;
+    text-align: center;
+}
+#mainSuccess{
+    height:370px;
+}

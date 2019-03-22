@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "./ChosenItem.css";
-import { drizzleConnect } from "drizzle-react";
 class ChosenItem extends Component {
 
     render() {

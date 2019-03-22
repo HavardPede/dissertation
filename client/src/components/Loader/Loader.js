@@ -33,17 +33,21 @@ class Loader extends Component {
             console.error(error);
         }
     };
+
     render() {
         if (!this.props.drizzleStatus.initialized || this.props.show ) {
             return (
                 <div id="main-loader">
-                    <img src={process.env.PUBLIC_URL + 'preloader.gif'} alt="loading gif"></img>
+                    <img src={process.env.PUBLIC_URL + 'preloader.gif'} id="loading-image" alt="loading gif"></img>
                 </div>
             )
         }
         return Children.only(this.props.children);
     }
 }
+
+
+
 const mapStateToProps = state => {
     return {
         accounts: state.accounts,

@@ -3,7 +3,6 @@ import Navbar from "../../Navbar/Navbar";
 import Footer from "../../Footer/Footer";
 import Items from "../../items/items";
 import { Container, Row, Col } from "reactstrap";
-import Grid from "../../Item-grid/item-grid";
 import "./inventory.css";
 
 
@@ -32,8 +31,10 @@ export default class Inventory extends Component {
             <div>
                 <Navbar />
                 <Container className="mainInventory">
-                    <Row>
-                        <Col xs="12" lg="7">
+                    <Row className="text-center">
+                        <Col xs="1"> 
+                        </Col>
+                        <Col xs="10">
                             <Items 
                                 showButton={true} 
                                 onItemSelect={this.handleItemSelect} 
@@ -44,12 +45,6 @@ export default class Inventory extends Component {
                             {this.state.ItemSelected !== "" && <button type="button" className="standard-button">
                                 Equip/Unequip Item
                         </button>}
-                        </Col>
-                        <Col xs="5">
-                            <h4 id="titleInventory">Equipment</h4>
-                            <div id="equipment">
-                                {/*<Grid width="300px" />*/}
-                            </div>
                         </Col>
                     </Row>
                 </Container>

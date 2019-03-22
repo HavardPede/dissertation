@@ -11,8 +11,11 @@ import Loader from "../Loader/Loader";
 import Inventory from "../Pages/Inventory/Inventory";
 import Home from "../Pages/Home/Home";
 import Upgrade from "../Pages/Upgrade/Upgrade";
+import AuctionHouse from "../Pages/AuctionHouse/AuctionHouse";
 import "./App.css";
-
+import Result from "../UpgradeResult/UpgradeResult";
+import Navbar from "../Navbar/Navbar";
+import Footer from "../Footer/Footer";
 
 class App extends Component {
   constructor(props, context) {
@@ -24,15 +27,18 @@ class App extends Component {
     this.generateItem = this.generateItem.bind(this);
     this.setItemKeyList = this.setItemKeyList.bind(this);
     this.setItemList = this.setItemList.bind(this);
+    this.handleUpgrade = this.handleUpgrade.bind(this);
+    this.handleResetUpgradeResult = this.handleResetUpgradeResult.bind(this);
     this.rarity = ["common", "rare", "epic", "legendary"];
     this.state = {
       balanceKey: null,
       itemKeys: null,
       balance: "",
-      items: []
+      items: [],
+      upgrade: null
     }
+    this.upgradeResult = null;
   }
-
   componentDidMount = async () => {
     try {
       const balanceKey = this.contracts.ItemOwnership.methods.balanceOf.cacheCall(this.props.account);
@@ -50,16 +56,13 @@ class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     //If balanceOf is in drizzle-state, update local value
     if (this.props.state.balanceOf !== prevProps.state.balanceOf) {
-      console.log("set balance got called")
-      this.setBalance()
+      this.setBalance();
     }
     //If the balance is changed, upload items anew
     if (this.state.balance !== prevState.balance) {
-      console.log("setItemKeyList got called")
       this.setItemKeyList();
     }
     if (this.props.state.getItemByIndex !== prevProps.state.getItemByIndex && this.state.balance > 0) {
-      console.log("setItemList got called")
       this.setItemList();
     }
   }
@@ -90,7 +93,6 @@ class App extends Component {
       for (let i = 0; i < this.state.itemKeys.length; i++) {
         let itemStats = this.props.state.getItemByIndex[this.state.itemKeys[i]].value;
         let item = this.generateItem(itemStats);
-        console.log(item);
         items.push(item);
       }
       this.setState({ items });
@@ -105,6 +107,13 @@ class App extends Component {
       this.rarity[key.rarity - 1]
     );
   }
+  
+  handleResetUpgradeResult(){
+    this.setState({upgrade: null});
+  }
+  handleUpgrade(upgrade) {
+    this.setState({ upgrade });
+  }
 
   render() {
     if (this.state.items.length === parseInt(this.state.balance)) {
@@ -113,13 +122,29 @@ class App extends Component {
           <Switch>
             <Route path="/" component={Home} exact />
             <Route path="/inventory" ><Inventory items={this.state.items} /></Route>
-            <Route path="/upgrade" ><Upgrade items={this.state.items} /></Route>
+            <Route path="/auction-house" ><AuctionHouse items={this.state.items} /></Route>
+            <Route path="/upgrade" ><Upgrade items={this.state.items} upgradeEvent={this.handleResetUpgradeResult} /></Route>
+            <Route path="/result" >
+              <Result 
+                items={this.state.items} 
+                handleUpgrade={this.handleUpgrade} 
+                upgrade={this.state.upgrade}
+              />
+            </Route>
             <Route component={Error404} />
           </Switch>
         </BrowserRouter>
       );
     }
-    return <Loader show={true} /> //Show loading animation till items are fetched
+    return (
+      <BrowserRouter>
+        <div>
+          <Navbar />
+          <Loader show={true} />
+          <Footer />
+        </div>
+      </BrowserRouter>
+    )
   }
 }
 

@@ -1,0 +1,24 @@
+.auction-house-item{
+    border: 2px solid black;
+    width: 180px;
+    margin:4px;
+    margin-bottom: 10px;
+    padding:15px;
+    padding-bottom: 0px;
+    font-weight: bold;
+}
+#all-ah-items{
+    display:flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    height:100%;
+}
+.auction-image{
+    margin-bottom: 10px;
+}
+.auction-price-row{
+    border-top: 2px solid black;
+    margin-top: 20px;
+    color:white;
+    background-color: #4B4B4B;
+}
