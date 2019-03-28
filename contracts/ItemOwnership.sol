@@ -26,12 +26,12 @@ contract ERC165Implementation is ERC165 {
     //mapping to store what interfaces are supported
     mapping (bytes4 => bool) internal supportedInterfaces;
 
-    /// @notice Query if a contract implements an interface.
-    /// @param interfaceID The interface identifier, as specified in ERC-165.
-    /// @dev Interface identification is specified in ERC-165. This function
-    ///  uses less than 30,000 gas.
+    ///@notice Query if a contract implements an interface.
+    ///@param interfaceID The interface identifier, as specified in ERC-165.
+    ///@dev Interface identification is specified in ERC-165. This function
+    /// uses less than 30,000 gas.
     /// @return `true` if the contract implements `interfaceID` and
-    ///  `interfaceID` is not 0xffffffff, `false` otherwise.
+    /// `interfaceID` is not 0xffffffff, `false` otherwise.
     function supportsInterface(bytes4 interfaceID) external view returns (bool) {
         return supportedInterfaces[interfaceID];
     }
@@ -50,9 +50,6 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
     constructor () public {
         owner = msg.sender;
     }
-
-
-
 
 
     /*** NAIVE METHODS ***/
@@ -98,17 +95,29 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
         return itemApprovals[_id] == _user;
     }
 
+    ///@dev check if item exists
     function itemIsInGame(uint _id) internal view returns (bool) {
         require(_id > 0 || _id <= ids, "Id is not valid");
         require(ownerOfItem[_id] != address(0), "Item is (no longer) in the game");
+        return true;
     }
 
     //From AddressUtils.sol library.
+    ///@dev check if a given address is a contract
     function isContract(address addr) internal view returns (bool) {
         uint256 size;
         assembly { size := extcodesize(addr) }
         return size > 0;
     }
+
+    ///@dev check if item is on auction
+    ///@param _id id of item to check
+    function isOnAuction(uint _id) internal view returns (bool) {
+        require(itemIsInGame(_id), "item does not exist");
+        User storage itemOwner = users[ownerOfItem[_id]];
+        return itemOwner.items[itemOwner.indexOfItem[_id]].onAuction;
+    }
+
     /// @notice Handle the receipt of an NFT
     /// @return `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     function onERC721Received(
@@ -120,6 +129,10 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }    
 
+
+
+
+
     /*** SKEPTICAL METHODS ***/
 
     /// @notice Change or reaffirm the approved address for an item.
@@ -127,7 +140,8 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
     /// @param _id The item to approve.
     function approve(address _to, uint _id) external payable {       
         //Make sure its a valid id
-        itemIsInGame(_id);
+        require(itemIsInGame(_id));
+        require(!isOnAuction(_id));
         //check if caller has right to approve this item to an account
         address itemOwner = ownerOfItem[_id];
         require(
@@ -148,12 +162,12 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
     /// @return The approved address for this item, or the zero address if there is none.
     function getApproved(uint256 _id) external view returns (address) {
         //Make sure its a valid id
-        itemIsInGame(_id);
+        require(itemIsInGame(_id), "item does not exist");
         return itemApprovals[_id];
     }
 
     /// @notice Transfer ownership of an item -- THE CALLER IS RESPONSIBLE
-    ///  TO CONFIRM THAT `_to` IS CAPABLE OF RECEIVING itemS OR ELSE
+    ///  TO CONFIRM THAT `_to` IS CAPABLE OF RECEIVING ITEMS OR ELSE
     ///  THEY MAY BE PERMANENTLY LOST.
     /// @param _from The current owner of the item.
     /// @param _to The new owner.
@@ -165,7 +179,9 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
     ) public payable {
         address itemOwner = ownerOfItem[_id];        
         //Make sure its a valid id
-        itemIsInGame(_id);
+        require(itemIsInGame(_id));
+        //make sure item is not up for auction
+        require(!isOnAuction(_id));
 
         //Check if sender is authorized to transfer item
         require(
@@ -191,6 +207,8 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
         //call transfer function to do checks and transfer item
         transferFrom(_from, _to, _id);
 
+        //if caller is another contract, make sure that 
+        //the contract has implemented ERC721, or cancel transfer
         if (isContract(_to)) {
             ERC721TokenReceiver receiver = ERC721TokenReceiver(_to);
             require(
@@ -229,7 +247,7 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
     ///@notice This function can be used to iterate through all items of a user,
     ///in combination with balanceOf(_owner). This is the only way to return all
     ///items an address owns.
-    function getItemByIndex(address _owner, uint _index) external view 
+    function getItemByIndex(address _owner, uint _index) public view 
     returns(
         uint id,
         uint equipmentType,
@@ -237,7 +255,8 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
         uint16 stat1,
         uint16 stat2,
         uint8 rarity,
-        address ownerAddress
+        address ownerAddress,
+        bool onAuction
     ) {
         User storage user = users[_owner];
         require(user.items.length >= _index, "Owner dont have that many items.");
@@ -247,7 +266,7 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
     ///@notice This function can be used to iterate through all items of a user,
     ///in combination with balanceOf(_owner). This is the only way to return all
     ///items an address owns.
-    function getItemByID(address _owner, uint _id) external view 
+    function getItemByID(address _owner, uint _id) public view 
     returns(
         uint id,
         uint equipmentType,
@@ -255,9 +274,10 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
         uint16 stat1,
         uint16 stat2,
         uint8 rarity,
-        address ownerAddress
+        address ownerAddress,
+        bool onAuction
     ) {
-        itemIsInGame(_id);
+        require(itemIsInGame(_id));
         require(ownerOfItem[_id] == _owner, "Thats not the owner of the item");
         return getItem(_owner, users[_owner].indexOfItem[_id]);
 
@@ -285,6 +305,13 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
             itemApprovals[_id1] == itemApprovals[_id3] &&
              itemApprovals[_id1] == address(0),
             "Items cant be approved for trade"
+        );
+        //check that items are not up for auction
+        require(
+            !isOnAuction(_id1) &&
+            !isOnAuction(_id2) && 
+            !isOnAuction(_id3),
+            "Cant upgrade items that are up for auction"
         );
         
         //check that items are of same rarity

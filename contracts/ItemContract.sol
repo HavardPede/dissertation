@@ -57,6 +57,7 @@ contract ItemContract is ERC721 {
         uint16 img;
         uint16[2] stats;
         uint8 rarity; //1-4 => common, rare, epic, legendary      
+        bool onAuction;
         /*
         type:
         001 - amulet
@@ -66,6 +67,15 @@ contract ItemContract is ERC721 {
         005 - body 
         006 - shield
         */
+    }     
+    
+    ///@notice auction struct. 
+    struct Auction {
+        uint id; //ID if item
+        uint128 price;  //Price of auction
+        uint64 expiration;  //Time in seconds before it concludes
+        uint64 startTime;   //Time it started  
+        address payable seller;  
     }
 
     ///@dev The user struct. Stores Users items an a map of items to index
@@ -73,6 +83,7 @@ contract ItemContract is ERC721 {
         Item[] items;
         mapping(uint => uint) indexOfItem;
     }   
+
 
 
 
@@ -105,9 +116,20 @@ contract ItemContract is ERC721 {
     ///all of tokens linked to account1
     mapping (address => mapping (address => bool)) internal approvedForAll;
 
+    ///@notice mapping of all the indexes of all auctions in the auctions-array
+    mapping(uint256 => uint) internal auctionIndexes;
+
+    ///@notice array of all active auctions 
+    Auction[] internal auctions;
+    //Having an array of all ids would be beneficial for the speed of fetching all active auctions.
+    //However, this would require you to iterate through the whole array when you want to delete an item.
+    //This step would cost more gas when removing item from AH. Having an extra step when fetching 
+    //items is completely free, only a TINY bit more time-consuming
 
 
-    /*** Functions ***/
+
+
+    /*** FUNCTIONS ***/
 
     ///@dev Function to return an item given a user and the index of the item
     ///@param _index Id of the item in question
@@ -121,7 +143,8 @@ contract ItemContract is ERC721 {
         uint16 stat1,
         uint16 stat2,
         uint8 rarity,
-        address owner
+        address owner,
+        bool onAuction
     ) {
         Item storage item = users[_owner].items[_index];
         id = item.id;
@@ -131,18 +154,23 @@ contract ItemContract is ERC721 {
         stat2 = item.stats[1];
         rarity = item.rarity;
         owner = _owner;
+        onAuction = item.onAuction;
     }
 
     function transferOwnership(address _from, address _to, uint _id) internal {
         //Store item locally
-        Item memory item = users[_from].items[users[_from].indexOfItem[_id]];
+        User storage from = users[_from];
+        Item memory item = from.items[from.indexOfItem[_id]];
+
         require(users[_from].items.length > 0, "Account must have items to transfer from");
+
         //remove item from users list of items
-        if (users[_from].items.length > 1) {
-            users[_from].items[users[_from].indexOfItem[_id]] = users[_from].items[users[_from].items.length-1];
-            users[_from].indexOfItem[_id] = users[_from].indexOfItem[_id];
+        if (from.items.length > 1) {
+            Item memory lastItem = from.items[from.items.length - 1];
+            from.items[from.indexOfItem[_id]] = lastItem;
+            from.indexOfItem[lastItem.id] = from.indexOfItem[_id];
         }
-        users[_from].items.length--;
+        from.items.length--;
 
         //Push item onto owners list of items and store the index to the item
         users[_to].indexOfItem[ids] = users[_to].items.push(item) - 1;
@@ -180,7 +208,7 @@ contract ItemContract is ERC721 {
         ids++;
         uint id = ids;
         //Locally store an item-struct with the given params
-        Item memory item = Item(id, _equipmentType, _img, [_stat1, _stat2], _rarity);
+        Item memory item = Item(id, _equipmentType, _img, [_stat1, _stat2], _rarity, false);
 
         //Push item onto owners list of items and store the index to the item
         users[_owner].indexOfItem[id] = users[_owner].items.push(item) - 1;

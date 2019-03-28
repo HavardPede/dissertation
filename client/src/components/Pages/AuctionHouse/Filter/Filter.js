@@ -1,7 +1,5 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { drizzleConnect } from "drizzle-react";
-import { Modal, Container, Row, Col, ModalHeader, ModalBody, ModalFooter, Button, Input } from "reactstrap";
+import { Modal, Row, Col, ModalHeader, ModalBody, ModalFooter, Button, Input } from "reactstrap";
 import "./Filter.css";
 
 class Filter extends Component {
@@ -14,14 +12,15 @@ class Filter extends Component {
         this.updateFilter = this.updateFilter.bind(this);
         this.handleSetStat1 = this.handleSetStat1.bind(this);
         this.handleSetStat2 = this.handleSetStat2.bind(this);
+        this.removeFilter = this.removeFilter.bind(this);
     }
     state = {
         rarity: 0,
         type: 0,
-        minPrice: "",
-        maxPrice: "",
-        stat1: "",
-        stat2: ""
+        minPrice: 0,
+        maxPrice: 0,
+        stat1: 0,
+        stat2: 0
     }
     handleEquipSelect(e){
         this.setState({
@@ -55,14 +54,34 @@ class Filter extends Component {
     }
 
     updateFilter(){
-        this.props.updateFilter({
-            rarity: this.state.rarity,
-            type: this.state.type,
-            stat1: this.state.stat1,
-            stat2: this.state.stat2,
-            min: this.state.minPrice,
-            max: this.state.maxPrice
+        if(
+            this.state.minPrice < 0 || 
+            this.state.maxPrice < 0 ||
+            this.state.stat1 < 0 ||
+            this.state.stat2 < 0
+        ) {
+            alert("Invalid Input!");
+        } else {
+            this.props.updateFilter({
+                rarity: this.state.rarity,
+                type: this.state.type,
+                stat1: this.state.stat1,
+                stat2: this.state.stat2,
+                min: this.state.minPrice,
+                max: this.state.maxPrice
+            })
+        }
+    }
+    removeFilter() {
+        this.setState({
+            rarity: 0,
+            type: 0,
+            minPrice: 0,
+            maxPrice: 0,
+            stat1: 0,
+            stat2: 0
         })
+        this.props.removeFilter();
     }
     render() {
         return (
@@ -139,7 +158,7 @@ class Filter extends Component {
                     <Button className="auction-house-button" 
                         onClick={this.updateFilter}
                     >SET FILTER</Button>
-                    <Button className="auction-house-button" onClick={this.props.removeFilter}>CANCEL</Button>
+                    <Button className="auction-house-button" onClick={this.removeFilter}>CANCEL</Button>
                 </ModalFooter>
             </Modal>
         )

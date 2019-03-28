@@ -1,4 +1,5 @@
 import ItemOwnership from "./contracts/ItemOwnership.json";
+import AuctionHouse from "./contracts/AuctionHouse.json";
 
 const drizzleOptions = {
     web3: {
@@ -9,7 +10,8 @@ const drizzleOptions = {
       },
     },
     contracts: [
-      ItemOwnership
+      ItemOwnership,
+      AuctionHouse
     ],
     polls: {
         accounts: 3000,
@@ -19,7 +21,11 @@ const drizzleOptions = {
         MintItem: ["MitItem"],
         Transfer: ["Transfer"],
         Approval: ["Approval"],
-        ApprovalForAll: ["ApprovalForAll"]
+        ApprovalForAll: ["ApprovalForAll"],
+        AuctionCreated: ["AuctionCreated"],
+        AuctionPurchased: ["AuctionPurchased"],
+        AuctionEnded: ["AuctionEnded"]
+
     },
   };
   export default drizzleOptions;

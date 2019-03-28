@@ -40,19 +40,11 @@ class App extends Component {
     this.upgradeResult = null;
   }
   componentDidMount = async () => {
-    try {
-      const balanceKey = this.contracts.ItemOwnership.methods.balanceOf.cacheCall(this.props.account);
-      this.setState({ balanceKey });
-      this.setBalance();
-
-    } catch (error) {
-      // Catch any errors for any of the above operations.
-      alert(
-        "Web3 provider is not set up correctly.\nUse Metamask to connect to network \"localhost:7545.\"",
-      );
-      console.error(error);
-    }
+    const balanceKey = this.contracts.ItemOwnership.methods.balanceOf.cacheCall(this.props.account);
+    this.setState({ balanceKey });
+    this.setBalance();
   };
+
   componentDidUpdate(prevProps, prevState) {
     //If balanceOf is in drizzle-state, update local value
     if (this.props.state.balanceOf !== prevProps.state.balanceOf) {
@@ -107,9 +99,9 @@ class App extends Component {
       this.rarity[key.rarity - 1]
     );
   }
-  
-  handleResetUpgradeResult(){
-    this.setState({upgrade: null});
+
+  handleResetUpgradeResult() {
+    this.setState({ upgrade: null });
   }
   handleUpgrade(upgrade) {
     this.setState({ upgrade });
@@ -125,9 +117,9 @@ class App extends Component {
             <Route path="/auction-house" ><AuctionHouse items={this.state.items} /></Route>
             <Route path="/upgrade" ><Upgrade items={this.state.items} upgradeEvent={this.handleResetUpgradeResult} /></Route>
             <Route path="/result" >
-              <Result 
-                items={this.state.items} 
-                handleUpgrade={this.handleUpgrade} 
+              <Result
+                items={this.state.items}
+                handleUpgrade={this.handleUpgrade}
                 upgrade={this.state.upgrade}
               />
             </Route>

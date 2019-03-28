@@ -5,14 +5,22 @@ import { Container, Row, Col, Button } from "reactstrap";
 import AuctionHouseItems from "./AuctionHouseItems/AuctionHouseItems";
 import Filter from "./Filter/Filter";
 import "./AuctionHouse.css";
+import PropTypes from "prop-types";
+import { drizzleConnect } from "drizzle-react";
 
 
-
-
-export default class AuctionHouse extends Component {
-    constructor(props) {
+class AuctionHouse extends Component {
+    constructor(props, context) {
         super(props);
 
+        this.drizzle = context.drizzle;
+        this.contracts = this.drizzle.contracts;
+        console.log(this.contracts.AuctionHouse)
+
+        this.setAHBalance = this.setAHBalance.bind(this);
+        this.setAHKeyList = this.setAHKeyList.bind(this);
+        this.setAhInfoList = this.setAhInfoList.bind(this);
+        this.setItemList = this.setItemList.bind(this);
         this.handleItemSelect = this.handleItemSelect.bind(this);
         this.handleToggleFilter = this.handleToggleFilter.bind(this);
         this.handleRemoveFilter = this.handleRemoveFilter.bind(this);
@@ -20,31 +28,117 @@ export default class AuctionHouse extends Component {
         this.handleToggleSellItem = this.handleToggleSellItem.bind(this);
     }
     state = {
-        ItemSelected: -1,
+        //Used for fetching AH items
+        AHBalanceKey: null,
+        AHBalance: null,
+        auctionKeys: [],
+        AHItemInfo: [],
+        itemKeys: [],
+        items: [],
+        //Used for state of page
+        itemSelected: -1,
         filterModal: false,
         filter: null,
-        sellItemModal:false
+        sellItemModal: false
     }
+    //When state changes, call correct function.
+    componentDidUpdate(prevProps, prevState) {
+        //Whenever the amount of auctions change, update that in store.
+        if (this.props.state.numberOfAuctions !== prevProps.state.numberOfAuctions) {
+            this.setAHBalance();
+        }
+        //Whenever a new ah-balance is fetched, use this to fetch all auctions anew.
+        if (this.state.AHBalance !== prevState.AHBalance) {
+            this.setAHKeyList();
+        }
+        //Whenever auctions have been fetched
+        if (this.props.state.getAuctionByIndex !== prevProps.state.getAuctionByIndex) {
+            this.setAhInfoList();
+        }
+        //whenever some new items have been fetched, update state
+        if (this.props.state.getItemByID !== prevProps.state.getItemByID) {
+            this.setItemList();
+        }
+    }
+
+    componentDidMount = async () => {
+        //When component mounts, fetch how many items are currently on the auction house
+        const AHBalanceKey = this.contracts.AuctionHouse.methods.numberOfAuctions.cacheCall();
+        this.setState({ AHBalanceKey });
+        this.setAHBalance();
+    };
+
+    //When the ah-balance is fetched, store it in state
+    setAHBalance() {
+        if (this.state.AHBalanceKey !== null && this.state.AHNumberKey in this.props.state.numberOfAuctions) {
+            let AHBalance = this.props.state.numberOfAuctions[this.state.AHBalanceKey].value;
+            this.setState({ AHBalance });
+        }
+    }
+    //When new ah-balance is set, fetch the keys for all auctions
+    setAHKeyList() {
+        let auctionKeys = [];
+        let key;
+        for (let i = 0; i < this.state.AHBalance; i++) {
+            key = this.contracts.AuctionHouse.getAuctionByIndex.cacheCall(i);
+            auctionKeys.push(key);
+        }
+        this.setState({ auctionKeys });
+    }
+    //When all ah-item keys are fetched, store the returned values and fetch information about items
+    setAhInfoList() {
+        let { auctionKeys, AHBalance, AHItemInfo } = this.state;
+        let { getAuctionByIndex } = this.props.state;
+
+        let lastKey = auctionKeys[auctionKeys.length - 1];
+        if (lastKey in getAuctionByIndex && AHBalance !== AHItemInfo.length) {
+
+            let infos = [];
+            let itemKeys = [];
+            
+            for (let i = 0; i < auctionKeys.length; i++) {
+                let itemInfo = getAuctionByIndex[auctionKeys[i]].value;
+                infos.push(itemInfo);
+                itemKeys.push(this.contracts.ItemOwnership.getItemByID.cacheCall(itemInfo[0]));
+            }
+            this.setState({ AHItemInfo: infos, itemKeys });
+        }
+    }
+    //When information about data is fetched, store the information
+    setItemList() {    
+        let lastKey = this.state.itemKeys[this.state.itemKeys.length - 1];
+        if (lastKey in this.props.state.getItemByIndex && this.state.balance !== this.state.items.length) {
+            let items = [];
+            for (let i = 0; i < this.state.itemKeys.length; i++) {
+                let itemStats = this.props.state.getItemByIndex[this.state.itemKeys[i]].value;
+                let item = this.generateItem(itemStats);
+                items.push(item);
+            }
+            this.setState({ items });
+        }
+    }
+
 
     //Item selected in modal
     handleItemSelect(itemSelected) {
     }
+
     handleSetFilter(filter) {
-        this.setState({filter, filterModal: false});
+        this.setState({ filter, filterModal: false });
     }
-    
-    handleToggleFilter(){
+
+    handleToggleFilter() {
         this.setState({
             filter: null,
             filterModal: !this.state.filterModal
-        })
+        });
     }
-    handleRemoveFilter(){
+    handleRemoveFilter() {
         this.handleToggleFilter();
-        this.setState({filter: null})
+        this.setState({ filter: null });
     }
-    handleToggleSellItem(){
-        this.setState({sellItemModal: !this.state.sellItemModal})
+    handleToggleSellItem() {
+        this.setState({ sellItemModal: !this.state.sellItemModal })
     }
 
     render() {
@@ -71,15 +165,25 @@ export default class AuctionHouse extends Component {
                         </div>
                     </Row>
                 </Container>
-                <Footer /> 
-                
-                <Filter 
+                <Footer />
+
+                <Filter
                     isOpen={this.state.filterModal}
-                    toggleClose={this.handleToggleFilter} 
-                    updateFilter={this.handleSetFilter} 
+                    toggleClose={this.handleToggleFilter}
+                    updateFilter={this.handleSetFilter}
                     removeFilter={this.handleRemoveFilter}
                 />
             </div>
         )
     }
 }
+const mapStateToProps = state => {
+    return {
+        account: state.accounts[0],
+        state: state.contracts.AuctionHouse
+    }
+}
+AuctionHouse.contextTypes = {
+    drizzle: PropTypes.object,
+};
+export default drizzleConnect(AuctionHouse, mapStateToProps);

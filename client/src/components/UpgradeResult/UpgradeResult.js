@@ -47,7 +47,7 @@ class UpgradeResult extends Component {
         let upgrade = this.props.upgrade;
         if ( upgrade !== null && upgrade !== undefined && upgrade.successful) {
             let item = this.props.items.find(i => {
-                return i.id == upgrade.id
+                return i.id === upgrade.id
             })
             if (item !== undefined) {
                 return true;

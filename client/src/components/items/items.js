@@ -3,7 +3,7 @@ import StandardButton from "../Button/Button.js";
 import "./items.css";
 import PropTypes from "prop-types";
 import { drizzleConnect } from "drizzle-react";
-import { Button, Tooltip, Container, Row, Col } from "reactstrap";
+import { Button, Container, Row, Col } from "reactstrap";
 
 class items extends Component {
     constructor(props, context) {
@@ -61,7 +61,7 @@ class items extends Component {
     }
     createItem() {
         for(let i = 0; i <= 3; i++) {
-            this.contracts.ItemOwnership.methods.createItem.cacheSend(6, 2, 50, 2, 2, this.props.account);
+            this.contracts.ItemOwnership.methods.createItem.cacheSend(4, 11, 50, 2, 3, this.props.account);
         }  
     }
 

@@ -8,7 +8,7 @@ export default class Navb extends Component {
         return (
             <div>
                 <Navbar color="danger"  light expand="lg">
-                    <NavbarBrand tag={Link} to="/" className="mr-auto brand text-white">Rise of Dawn</NavbarBrand>
+                    <NavbarBrand tag={Link} to="/" className="mr-auto brand text-white">CryptoWarrior</NavbarBrand>
                     <Nav className="ml-auto text-white main-nav nav" navbar>
                         <NavItem>
                             <NavLink tag={Link} to="/inventory" className="text-white nav-elem">INVENTORY</NavLink>
