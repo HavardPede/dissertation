@@ -36,7 +36,6 @@ export default class Inventory extends Component {
                         </Col>
                         <Col xs="10">
                             <Items 
-                                showButton={true} 
                                 onItemSelect={this.handleItemSelect} 
                                 items={this.props.items} 
                                 parentPage="inventory"

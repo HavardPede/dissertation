@@ -1,0 +1,26 @@
+#sellItemBox {
+    background-color:red;
+    height:40px;
+    width:40px;
+}
+.item-box-sell{
+    border: 2px solid #4B4B4B;
+    margin-left: 10px;
+    margin-right:10px;
+    padding:0px;
+    height: 100px;
+}
+.item-box-sell:hover{
+    border: 2px solid #dc3545;
+    font-size: 20px;
+}
+.price-input-sell{
+    -webkit-appearance: none;
+    border: 2px solid #4B4B4B;
+}
+.price-input-sell:focus{
+    border: 2px solid #4B4B4B;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}

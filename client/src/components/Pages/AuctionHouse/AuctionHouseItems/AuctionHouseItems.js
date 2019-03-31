@@ -1,15 +1,10 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { drizzleConnect } from "drizzle-react";
 import { Container, Row, Col } from "reactstrap";
 import "./AuctionHouseItems.css";
 
 class AuctionHouseItems extends Component {
     constructor(props, context) {
         super(props)
-
-        this.drizzle = context.drizzle;
-        this.contracts = this.drizzle.contracts;
         this.type = ["Amulet", "Helmet", "Trinket", "Weapon", "Body", "Shield"];
 
         this.passesFilter = this.passesFilter.bind(this);
@@ -28,6 +23,8 @@ class AuctionHouseItems extends Component {
             stat2:0
         }
     }
+    componentDidUpdate(){
+    }
     componentWillReceiveProps() {
         if (this.props.filter !== null) {
             this.correctFilter();
@@ -36,7 +33,8 @@ class AuctionHouseItems extends Component {
 
     //function for when you press an item
     handleItemSelect(e) {
-        const id = e.target.id
+        const id = e.current;
+        console.log("id is", id)
         var selected;
         if (this.state.itemSelected === id) {
             selected = -1;
@@ -74,12 +72,9 @@ class AuctionHouseItems extends Component {
 
     passesFilter(item) {
         let filter = this.state.correctedFilter;
-        console.log(filter);
         if (filter.rarity === 0 || filter.rarity === item.rarity) {
-            console.log("passes Rarity")
             if (filter.type === 0 || filter.type === item.type) {
-                console.log("passes Type")
-                if (item.price >= filter.min && (item.price <= filter.max || filter.max == null)) {
+                if (item.price >= filter.min && (item.price <= filter.max || filter.max == 0)) {
                     if(item.stats[0] >= filter.stat1 && item.stats[1] >= filter.stat2) {
                         return true;
                     }
@@ -93,7 +88,7 @@ class AuctionHouseItems extends Component {
     handlePresentItem(item) {
         if(this.passesFilter(item)){
             return (
-                <Container key={item.id} className={"auction-house-item " + item.rarity}>
+                <Container key={item.id} id={item.id} onClick={this.handleItemSelect} className={"auction-house-item " + item.rarity}>
                     <Row>
                         <Col xs="3">
                         </Col>
@@ -111,11 +106,12 @@ class AuctionHouseItems extends Component {
                     </Row>
                     <Row className="auction-price-row">
                         <Col className="col-3 text-center">Price</Col>
-                        <Col className="text-center">0.111 ETH</Col>
+                        <Col className="text-center">{Number.parseFloat(item.price).toFixed(3)} ETH</Col>
                     </Row>
                 </Container>
             )
         }
+        else return "";
     }
 
 
@@ -127,13 +123,4 @@ class AuctionHouseItems extends Component {
         )
     }
 }
-const mapStateToProps = state => {
-    return {
-        account: state.accounts[0],
-        state: state.contracts.ItemOwnership
-    }
-}
-AuctionHouseItems.contextTypes = {
-    drizzle: PropTypes.object,
-};
-export default drizzleConnect(AuctionHouseItems, mapStateToProps);
+export default AuctionHouseItems;

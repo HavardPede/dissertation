@@ -1,11 +1,16 @@
 .auction-house-item{
     border: 2px solid black;
     width: 180px;
+    height: 185px;
     margin:4px;
     margin-bottom: 10px;
     padding:15px;
     padding-bottom: 0px;
     font-weight: bold;
+    overflow:hidden;
+}
+.auction-house-item:hover{
+    border: 2px solid red;
 }
 #all-ah-items{
     display:flex;

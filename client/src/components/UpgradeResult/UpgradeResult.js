@@ -20,7 +20,7 @@ class UpgradeResult extends Component {
         console.log("mounted.", this.props.upgrade);
         console.log("Item recieved?", this.isNewItemFetched())
         if (this.props.upgrade === null) {
-            this.contracts.ItemOwnership.events.Upgrade({
+            this.contracts.AuctionHouse.events.Upgrade({
                 filter: {
                     owner: this.props.account
                 }
@@ -135,7 +135,7 @@ const mapStateToProps = state => {
     return {
         account: state.accounts[0],
         drizzleStatus: state.drizzleStatus,
-        state: state.contracts.ItemOwnership
+        state: state.contracts.AuctionHouse
     }
 }
 UpgradeResult.contextTypes = {

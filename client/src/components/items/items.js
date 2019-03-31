@@ -61,7 +61,7 @@ class items extends Component {
     }
     createItem() {
         for(let i = 0; i <= 3; i++) {
-            this.contracts.ItemOwnership.methods.createItem.cacheSend(4, 11, 50, 2, 3, this.props.account);
+            this.contracts.AuctionHouse.methods.createItem.cacheSend(4, 11, 50, 2, 3, this.props.account);
         }  
     }
 
@@ -70,48 +70,56 @@ class items extends Component {
 
         var rarity = this.state.rarity;
         var type = this.state.type;
-        if (type === "0" || type === item.type) { //correct type
-            if (rarity === "0" || rarity === item.rarity) { //correct rarity
-                if (!this.props.chosenItems.includes(item.id)) { //is not chosen 
-                    return (
-                        <div 
-                            className={
-                                item.rarity + " invent-item " + 
-                                ((this.state.itemSelected === item.id) && 
-                                " invent-item-selected") + " " + 
-                                (item.equipped && "equipped")
-                            }
-                            key={item.id} 
-                            id={item.id} 
-                            onClick={this.handleItemSelect}
-                        >
-                            {//IF equipped items get implemented again, uncomment this
-                            //item.equipped && <div className="overlay" id={item.id}><p>E</p></div>
-                            }
-                            <img src={"./images/" + item.type + "/" + item.image + ".png"} alt={item.name} id={item.id} ></img>
-                            <Container className="tooltip">
-                                <Row>
-                                    <Col className="col-5">Type:</Col>
-                                    <Col >{this.type[item.type - 1]}</Col>
-                                </Row>
-                                <Row>
-                                    <Col className="col-5">Rarity:</Col>
-                                    <Col >{item.rarity}</Col>
-                                </Row>
-                                <Row>
-                                    <Col className="col-5">Stat1:</Col>
-                                    <Col >{item.stats[0]}</Col>
-                                </Row>
-                                <Row>
-                                    <Col className="col-5">Stat2:</Col>
-                                    <Col >{item.stats[1]}</Col>
-                                </Row>
-                            </Container>
-                        </div>
-                    )
-                } else return ""
-            } else return ""
-        } else return ""
+        if (!item.onAuction) { 
+            if(
+                (this.props.parentPage === "upgrade" && item.rarity !== "legendary") ||
+                this.props.parentPage !== "upgrade"
+            ) {
+                if (type === "0" || type === item.type) { //correct type
+                    if (rarity === "0" || rarity === item.rarity) { //correct rarity
+                        if (!this.props.chosenItems.includes(item.id)) { //is not chosen 
+                            return (
+                                <div 
+                                    className={
+                                        item.rarity + " invent-item " + 
+                                        ((this.state.itemSelected === item.id) && 
+                                        " invent-item-selected") + " " + 
+                                        (item.equipped && "equipped")
+                                    }
+                                    key={item.id} 
+                                    id={item.id} 
+                                    onClick={this.handleItemSelect}
+                                >
+                                    {//IF equipped items get implemented again, uncomment this
+                                    //item.equipped && <div className="overlay" id={item.id}><p>E</p></div>
+                                    }
+                                    <img src={"./images/" + item.type + "/" + item.image + ".png"} alt={item.name} id={item.id} ></img>
+                                    <Container className="tooltip">
+                                        <Row>
+                                            <Col className="col-5">Type:</Col>
+                                            <Col >{this.type[item.type - 1]}</Col>
+                                        </Row>
+                                        <Row>
+                                            <Col className="col-5">Rarity:</Col>
+                                            <Col >{item.rarity}</Col>
+                                        </Row>
+                                        <Row>
+                                            <Col className="col-5">Stat1:</Col>
+                                            <Col >{item.stats[0]}</Col>
+                                        </Row>
+                                        <Row>
+                                            <Col className="col-5">Stat2:</Col>
+                                            <Col >{item.stats[1]}</Col>
+                                        </Row>
+                                    </Container>
+                                </div>
+                            )
+                        } 
+                    } 
+                }
+            } 
+        }
+        else return ""
     }
 
     render() {
@@ -141,9 +149,6 @@ class items extends Component {
                     }
                     {/*---------------- Button top right ---------------- */}
                     <Button type="button" onClick={this.createItem} className="standard-button"> Create New Item </Button>
-                    <div id="inventory-button">
-                        {this.props.showButton && <StandardButton text="Upgrade" link="/upgrade" />}
-                    </div>
                 </h5>
 
                 {/*---------------- Inventory box ---------------- */}
@@ -155,9 +160,10 @@ class items extends Component {
     }
 }
 const mapStateToProps = state => {
+    console.log(state)
     return {
         account: state.accounts[0],
-        state: state.contracts.ItemOwnership
+        state: state.contracts.AuctionHouse
     }
 }
 items.contextTypes = {

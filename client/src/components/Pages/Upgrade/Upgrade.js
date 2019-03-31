@@ -68,7 +68,7 @@ class Upgrade extends Component {
     }
     //function to upgrade 3 items
     handleUpgradeItems() {
-        this.contracts.ItemOwnership.methods.upgradeItems
+        this.contracts.AuctionHouse.methods.upgradeItems
             .cacheSend(
                 this.props.account,
                 parseInt(this.state.chosenItems[0]),
@@ -121,7 +121,6 @@ class Upgrade extends Component {
                     </ModalHeader>
                         <ModalBody>
                             <Items
-                                showButton={false}
                                 onItemSelect={this.handleItemSelect}
                                 items={this.props.items}
                                 parentPage="upgrade"
@@ -141,7 +140,7 @@ class Upgrade extends Component {
 const mapStateToProps = state => {
     return {
                     account: state.accounts[0],
-                state: state.contracts.ItemOwnership
+                state: state.contracts.AuctionHouse
             }
         }
 Upgrade.contextTypes = {

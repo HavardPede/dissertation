@@ -3,7 +3,6 @@ import "./DisplayItem.css"
 class DisplayItem extends Component {
 
     render() {
-
         let { items, itemID } = this.props;
         let item = items.find(i => {
             return i.id === itemID;

@@ -40,7 +40,7 @@ class App extends Component {
     this.upgradeResult = null;
   }
   componentDidMount = async () => {
-    const balanceKey = this.contracts.ItemOwnership.methods.balanceOf.cacheCall(this.props.account);
+    const balanceKey = this.contracts.AuctionHouse.methods.balanceOf.cacheCall(this.props.account);
     this.setState({ balanceKey });
     this.setBalance();
   };
@@ -72,7 +72,7 @@ class App extends Component {
     let itemKeys = [];
     let key;
     for (let i = 0; i < this.state.balance; i++) {
-      key = this.contracts.ItemOwnership.methods.getItemByIndex.cacheCall(this.props.account, i);
+      key = this.contracts.AuctionHouse.methods.getItemByIndex.cacheCall(this.props.account, i);
       itemKeys.push(key)
     }
     this.setState({ itemKeys });
@@ -96,7 +96,8 @@ class App extends Component {
       key.equipmentType,
       key.img,
       [key.stat1, key.stat2],
-      this.rarity[key.rarity - 1]
+      this.rarity[key.rarity - 1],
+      key.onAuction
     );
   }
 
@@ -144,7 +145,7 @@ const mapStateToProps = state => {
   return {
     account: state.accounts[0],
     drizzleStatus: state.drizzleStatus,
-    state: state.contracts.ItemOwnership
+    state: state.contracts.AuctionHouse
   }
 }
 App.contextTypes = {

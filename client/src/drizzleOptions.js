@@ -1,4 +1,3 @@
-import ItemOwnership from "./contracts/ItemOwnership.json";
 import AuctionHouse from "./contracts/AuctionHouse.json";
 
 const drizzleOptions = {
@@ -10,7 +9,6 @@ const drizzleOptions = {
       },
     },
     contracts: [
-      ItemOwnership,
       AuctionHouse
     ],
     polls: {

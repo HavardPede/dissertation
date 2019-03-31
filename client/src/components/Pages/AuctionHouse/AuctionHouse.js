@@ -4,9 +4,11 @@ import Footer from "../../Footer/Footer";
 import { Container, Row, Col, Button } from "reactstrap";
 import AuctionHouseItems from "./AuctionHouseItems/AuctionHouseItems";
 import Filter from "./Filter/Filter";
+import SellItem from "./SellItem/SellItem";
 import "./AuctionHouse.css";
 import PropTypes from "prop-types";
 import { drizzleConnect } from "drizzle-react";
+import AHItem from "../../../utils/AuctionHouseItem";
 
 
 class AuctionHouse extends Component {
@@ -15,8 +17,8 @@ class AuctionHouse extends Component {
 
         this.drizzle = context.drizzle;
         this.contracts = this.drizzle.contracts;
-        console.log(this.contracts.AuctionHouse)
 
+        this.rarity = ["common", "rare", "epic", "legendary"];
         this.setAHBalance = this.setAHBalance.bind(this);
         this.setAHKeyList = this.setAHKeyList.bind(this);
         this.setAhInfoList = this.setAhInfoList.bind(this);
@@ -26,6 +28,7 @@ class AuctionHouse extends Component {
         this.handleRemoveFilter = this.handleRemoveFilter.bind(this);
         this.handleSetFilter = this.handleSetFilter.bind(this);
         this.handleToggleSellItem = this.handleToggleSellItem.bind(this);
+        this.generateItem = this.generateItem.bind(this);
     }
     state = {
         //Used for fetching AH items
@@ -70,7 +73,7 @@ class AuctionHouse extends Component {
 
     //When the ah-balance is fetched, store it in state
     setAHBalance() {
-        if (this.state.AHBalanceKey !== null && this.state.AHNumberKey in this.props.state.numberOfAuctions) {
+        if (this.state.AHBalanceKey !== null && this.state.AHBalanceKey in this.props.state.numberOfAuctions) {
             let AHBalance = this.props.state.numberOfAuctions[this.state.AHBalanceKey].value;
             this.setState({ AHBalance });
         }
@@ -80,7 +83,7 @@ class AuctionHouse extends Component {
         let auctionKeys = [];
         let key;
         for (let i = 0; i < this.state.AHBalance; i++) {
-            key = this.contracts.AuctionHouse.getAuctionByIndex.cacheCall(i);
+            key = this.contracts.AuctionHouse.methods.getAuctionByIndex.cacheCall(i);
             auctionKeys.push(key);
         }
         this.setState({ auctionKeys });
@@ -93,34 +96,50 @@ class AuctionHouse extends Component {
         let lastKey = auctionKeys[auctionKeys.length - 1];
         if (lastKey in getAuctionByIndex && AHBalance !== AHItemInfo.length) {
 
-            let infos = [];
+            let infos = new Map();
             let itemKeys = [];
             
             for (let i = 0; i < auctionKeys.length; i++) {
                 let itemInfo = getAuctionByIndex[auctionKeys[i]].value;
-                infos.push(itemInfo);
-                itemKeys.push(this.contracts.ItemOwnership.getItemByID.cacheCall(itemInfo[0]));
+
+                infos.set(itemInfo[0], itemInfo);
+                itemKeys.push(this.contracts.AuctionHouse.methods.getItemByID.cacheCall(itemInfo.seller, itemInfo[0]));
             }
             this.setState({ AHItemInfo: infos, itemKeys });
         }
     }
     //When information about data is fetched, store the information
-    setItemList() {    
+    setItemList() {   
         let lastKey = this.state.itemKeys[this.state.itemKeys.length - 1];
-        if (lastKey in this.props.state.getItemByIndex && this.state.balance !== this.state.items.length) {
+        if (lastKey in this.props.state.getItemByID && this.state.balance !== this.state.items.length) {
             let items = [];
+
             for (let i = 0; i < this.state.itemKeys.length; i++) {
-                let itemStats = this.props.state.getItemByIndex[this.state.itemKeys[i]].value;
+                let itemStats = this.props.state.getItemByID[this.state.itemKeys[i]].value;
                 let item = this.generateItem(itemStats);
                 items.push(item);
             }
             this.setState({ items });
         }
     }
+    generateItem(itemStats) {
+        let auctionInfo = this.state.AHItemInfo.get(itemStats.id)
+        return new AHItem(
+            itemStats.id,
+            itemStats.equipmentType,
+            itemStats.img,
+            [itemStats.stat1, itemStats.stat2],
+            this.rarity[itemStats.rarity - 1],
+            auctionInfo.price,
+            auctionInfo.seller,
+            auctionInfo.ended
+        )
+    }
 
 
     //Item selected in modal
     handleItemSelect(itemSelected) {
+        this.setState({itemSelected});
     }
 
     handleSetFilter(filter) {
@@ -161,8 +180,11 @@ class AuctionHouse extends Component {
                     </Row>
                     <Row>
                         <div id="auction-items-box">
-                            <AuctionHouseItems onItemSelect={this.handleItemSelect} filter={this.state.filter} items={this.props.items} />
+                            <AuctionHouseItems onItemSelect={this.handleItemSelect} filter={this.state.filter} items={this.state.items} />
                         </div>
+                        {this.state.itemSelected !== -1 && 
+                            <Button type="button" onClick={this.handlePurchase} className="standard-button">Purchase Item</Button>    
+                        }
                     </Row>
                 </Container>
                 <Footer />
@@ -172,7 +194,12 @@ class AuctionHouse extends Component {
                     toggleClose={this.handleToggleFilter}
                     updateFilter={this.handleSetFilter}
                     removeFilter={this.handleRemoveFilter}
-                />
+                />                
+                <SellItem
+                    isOpen={this.state.sellItemModal}
+                    toggleClose={this.handleToggleSellItem}
+                    items={this.props.items}
+            />
             </div>
         )
     }

@@ -93,7 +93,7 @@ contract AuctionHouse is ItemOwnership {
         uint256 _duration,
         address payable _seller
     ) external {
-        require(itemIsInGame(_id), "item does not exist");
+        require(ItemOwnership.itemIsInGame(_id), "item does not exist");
         require(
             msg.sender == ownerOfItem[_id] ||
             approvedForAll[ownerOfItem[_id]][msg.sender],
@@ -110,7 +110,6 @@ contract AuctionHouse is ItemOwnership {
         //check that input doesnt overflow. The input-size for the values does not match struct-size
         //This is done purposely to allow for a return message if input-values are too high.
         require(_price == uint256(uint128(_price)), "Too high price");
-
         addAuction(        
             _id,
             _price,
@@ -166,18 +165,16 @@ contract AuctionHouse is ItemOwnership {
     function getAuctionByIndex(uint _index) public view returns (
         uint id,
         uint128 price, 
-        uint64 expiration,
-        uint64 startTime,
-        address seller
+        address seller,
+        bool ended
     ) {
         require(_index < auctions.length, "Index is too high");
         Auction storage auction = auctions[_index];
 
         id = auction.id;
-        seller = auction.seller;
         price = auction.price;
-        expiration = auction.expiration;
-        startTime = auction.expiration;    
+        seller = auction.seller;
+        ended = (auction.startTime + auction.expiration) < now;
     }
 
     ///@notice function to get information about an auction. 
@@ -187,9 +184,8 @@ contract AuctionHouse is ItemOwnership {
     function getAuctionInfo(uint _id) external view returns (
         uint id,
         uint128 price, 
-        uint64 expiration,
-        uint64 startTime,
-        address seller
+        address seller,
+        bool ended
     ) {
         require(itemIsInGame(_id), "item does not exist");
         require(isOnAuction(_id), "Item is not on auction");

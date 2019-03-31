@@ -17,6 +17,7 @@
     border:0px;
 }
 .price-input{
+    float:right;
     -webkit-appearance: none;
     border: 2px solid #4B4B4B;
 }
@@ -28,4 +29,7 @@
 }
 .filter{
     border:0px solid #4B4B4B;
+}
+.eth{
+    background-color:red
 }

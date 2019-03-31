@@ -25,4 +25,9 @@ contract("AuctionHouse", accounts => {
     
     assert.equal(await instance.balanceOf(accounts[1]), 1, "Did not remove 1 auction");
   })
+  it("Should set correct address when creating an item", async () => {
+    const instance = await AuctionHouse.deployed();
+    await instance.createItem(1, 1, 1, 1, 1, accounts[0]);
+    assert.equal(await instance.ownerOf(3), accounts[0], "did not set correct address");
+  })
 });
