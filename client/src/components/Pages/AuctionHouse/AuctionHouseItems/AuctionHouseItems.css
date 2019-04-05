@@ -12,6 +12,9 @@
 .auction-house-item:hover{
     border: 2px solid red;
 }
+.AH-item-selected{
+    border: 2px solid red;
+}
 #all-ah-items{
     display:flex;
     flex-wrap: wrap;
@@ -26,4 +29,8 @@
     margin-top: 20px;
     color:white;
     background-color: #4B4B4B;
+}
+#AH-purchase-button-row {
+    display:flex;
+    justify-content: center;
 }

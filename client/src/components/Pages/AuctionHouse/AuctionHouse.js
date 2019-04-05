@@ -5,6 +5,7 @@ import { Container, Row, Col, Button } from "reactstrap";
 import AuctionHouseItems from "./AuctionHouseItems/AuctionHouseItems";
 import Filter from "./Filter/Filter";
 import SellItem from "./SellItem/SellItem";
+import MyAuctions from "./MyAuctions/MyAuctions";
 import "./AuctionHouse.css";
 import PropTypes from "prop-types";
 import { drizzleConnect } from "drizzle-react";
@@ -29,6 +30,8 @@ class AuctionHouse extends Component {
         this.handleSetFilter = this.handleSetFilter.bind(this);
         this.handleToggleSellItem = this.handleToggleSellItem.bind(this);
         this.generateItem = this.generateItem.bind(this);
+        this.handlePurchase = this.handlePurchase.bind(this);
+        this.handleToggleMyAuctions = this.handleToggleMyAuctions.bind(this);
     }
     state = {
         //Used for fetching AH items
@@ -37,12 +40,14 @@ class AuctionHouse extends Component {
         auctionKeys: [],
         AHItemInfo: [],
         itemKeys: [],
-        items: [],
+        myAuctions: [],
+        othersAuctions: [],
         //Used for state of page
         itemSelected: -1,
         filterModal: false,
         filter: null,
-        sellItemModal: false
+        sellItemModal: false,
+        myAuctionsModal: false
     }
     //When state changes, call correct function.
     componentDidUpdate(prevProps, prevState) {
@@ -111,15 +116,23 @@ class AuctionHouse extends Component {
     //When information about data is fetched, store the information
     setItemList() {   
         let lastKey = this.state.itemKeys[this.state.itemKeys.length - 1];
-        if (lastKey in this.props.state.getItemByID && this.state.balance !== this.state.items.length) {
-            let items = [];
+        if (lastKey in this.props.state.getItemByID && this.state.balance !== this.state.myAuctions.length + this.state.othersAuctions.length) {
+            let myAuctions = [];
+            let othersAuctions = [];
 
             for (let i = 0; i < this.state.itemKeys.length; i++) {
                 let itemStats = this.props.state.getItemByID[this.state.itemKeys[i]].value;
-                let item = this.generateItem(itemStats);
-                items.push(item);
+                let auction = this.generateItem(itemStats);
+                if (auction.seller === this.props.account) {
+                    myAuctions.push(auction);
+                }
+                else {
+                    othersAuctions.push(auction);
+                }  
             }
-            this.setState({ items });
+            this.setState({myAuctions, othersAuctions});
+
+            
         }
     }
     generateItem(itemStats) {
@@ -159,6 +172,12 @@ class AuctionHouse extends Component {
     handleToggleSellItem() {
         this.setState({ sellItemModal: !this.state.sellItemModal })
     }
+    handleToggleMyAuctions() {
+        this.setState({ myAuctionsModal: !this.state.myAuctionsModal })
+    }
+    handlePurchase() {
+        this.contracts.AuctionHouse.methods.purchaseAuction.cacheSend(this.state.itemSelected);
+    }
 
     render() {
         return (
@@ -176,15 +195,18 @@ class AuctionHouse extends Component {
                         <Col id="sell-button" className="text-right">
                             <Button type="button" onClick={() => this.handleToggleFilter()} className="auction-house-button" >FILTER</Button>
                             <Button type="button" onClick={this.handleToggleSellItem} className="auction-house-button"> SELL ITEM </Button>
+                            <Button type="button" onClick={this.handleToggleMyAuctions} className="auction-house-button"> MY AUCTIONS </Button>
                         </Col>
                     </Row>
                     <Row>
                         <div id="auction-items-box">
-                            <AuctionHouseItems onItemSelect={this.handleItemSelect} filter={this.state.filter} items={this.state.items} />
+                            <AuctionHouseItems onItemSelect={this.handleItemSelect} itemSelected={this.state.itemSelected} filter={this.state.filter} items={this.state.othersAuctions} />
                         </div>
-                        {this.state.itemSelected !== -1 && 
-                            <Button type="button" onClick={this.handlePurchase} className="standard-button">Purchase Item</Button>    
-                        }
+                    </Row>
+                    <Row id="AH-purchase-button-row">
+                            {this.state.itemSelected !== -1 && 
+                                <Button type="button" onClick={this.handlePurchase} className="standard-button">Purchase Item</Button>    
+                            }
                     </Row>
                 </Container>
                 <Footer />
@@ -199,7 +221,12 @@ class AuctionHouse extends Component {
                     isOpen={this.state.sellItemModal}
                     toggleClose={this.handleToggleSellItem}
                     items={this.props.items}
-            />
+                />
+                <MyAuctions
+                isOpen={this.state.myAuctionsModal}
+                toggleClose={this.handleToggleMyAuctions}
+                auctions={this.state.myAuctions}
+                />
             </div>
         )
     }

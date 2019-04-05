@@ -23,7 +23,7 @@ class SellItem extends Component {
     }
     state = {
         itemID: "-1",
-        price: -1,
+        price: 0,
         time:  -1,
         itemModal: false,
     }
@@ -47,7 +47,7 @@ class SellItem extends Component {
     handleCancel() {
         this.setState({
             itemID: 1,
-            price: -1,
+            price: 0,
             time:  -1,
             itemModal: false
         });
@@ -57,7 +57,7 @@ class SellItem extends Component {
         let { itemID, price, time } = this.state;
         if (
             itemID !== -1 &&
-            price !== -1 &&
+            price > 0 &&
             time !== -1
         ) {
             this.contracts.AuctionHouse.methods.startAuction
@@ -65,6 +65,7 @@ class SellItem extends Component {
         } else {
             alert("Invalid inputs");
         }
+        this.props.toggleClose();
     }
     toggleItemModal() {
         this.setState({itemModal: !this.state.itemModal})
@@ -95,8 +96,9 @@ class SellItem extends Component {
                     </Col> 
                 </Row> 
                 <Row className="filter-row align-middle"> 
-                    <Col className="col-5 text-center align-middle">
-                        Price: (ETH)
+                    <Col className="col-6 text-center align-middle">
+                        Price in Finney: (1/1000 ETH)
+
                     </Col> 
                     <Col> 
                         <Input type="number" value={this.state.price} onChange={this.handlePriceSelect} name="price" className="price-input-sell" />

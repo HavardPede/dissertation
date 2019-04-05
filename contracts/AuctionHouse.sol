@@ -149,15 +149,12 @@ contract AuctionHouse is ItemOwnership {
         require(auction.startTime + auction.expiration > now, "auction is expired");
         require(msg.sender != ownerOfItem[_id]);
         
-        //Price payed must be same as expected
-        require(msg.value == auction.price, "Wrong amount for payment of auction");
-
         //remove item from auctionhouse and transfer ownership
         removeAuction(_id, msg.sender);
 
         //We fend off re-entrancy attacks by transferring the item and taking it off the
         //auction house before transferring the currency.
-        auction.seller.transfer(msg.value);
+        auction.seller.transfer(auction.price finney);
         //send out event
         emit AuctionPurchased(_id, auction.price, auction.seller, msg.sender);
     }

@@ -33,8 +33,7 @@ class AuctionHouseItems extends Component {
 
     //function for when you press an item
     handleItemSelect(e) {
-        const id = e.current;
-        console.log("id is", id)
+        const id = e.currentTarget.id;
         var selected;
         if (this.state.itemSelected === id) {
             selected = -1;
@@ -88,7 +87,17 @@ class AuctionHouseItems extends Component {
     handlePresentItem(item) {
         if(this.passesFilter(item)){
             return (
-                <Container key={item.id} id={item.id} onClick={this.handleItemSelect} className={"auction-house-item " + item.rarity}>
+                <Container 
+                    key={item.id} 
+                    id={item.id} 
+                    onClick={this.handleItemSelect} 
+                    className={ 
+                        ((this.props.itemSelected === item.id) && 
+                        "AH-item-selected") +
+                        " auction-house-item " + 
+                        item.rarity
+                    }
+                >
                     <Row>
                         <Col xs="3">
                         </Col>
@@ -105,8 +114,8 @@ class AuctionHouseItems extends Component {
                         <Col className="text-center">{item.stats[1]}</Col>
                     </Row>
                     <Row className="auction-price-row">
-                        <Col className="col-3 text-center">Price</Col>
-                        <Col className="text-center">{Number.parseFloat(item.price).toFixed(3)} ETH</Col>
+                        <Col className="col-3 text-center">Price:</Col>
+                        <Col className="text-center">{item.price} Finney</Col>
                     </Row>
                 </Container>
             )
