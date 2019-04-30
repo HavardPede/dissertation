@@ -2,9 +2,17 @@ import React, { Component } from "react";
 import { Modal, Row, Col, ModalHeader, ModalBody, ModalFooter, Button, Input } from "reactstrap";
 import "./Filter.css";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: Filter
+* Description: Filter modal for setting auctionhouse filter
+*/
+
 class Filter extends Component {
     constructor(props) {
         super(props)
+        //Bind functions
         this.handleEquipSelect = this.handleEquipSelect.bind(this);
         this.handleRaritySelect = this.handleRaritySelect.bind(this);
         this.handleMax = this.handleMax.bind(this);
@@ -14,75 +22,93 @@ class Filter extends Component {
         this.handleSetStat2 = this.handleSetStat2.bind(this);
         this.removeFilter = this.removeFilter.bind(this);
     }
+    //Initialize state
     state = {
-        rarity: 0,
-        type: 0,
-        minPrice: 0,
-        maxPrice: 0,
+        rarity: "0",
+        type: "0",
+        min: 0,
+        max: 0,
         stat1: 0,
         stat2: 0
     }
+    //Set type-filter
     handleEquipSelect(e){
         this.setState({
             type: e.target.value
         })
     }
+    //Set rarity-filter
     handleRaritySelect(e){
         this.setState({
             rarity: e.target.value
         })
     }
+    //Set minimum price
     handleMin(e){
+        let min = e.target.value;
+        if (min === "") min = 0;
         this.setState({
-            minPrice: e.target.value
+            min
         })
-    }    
+    }
+    //Set maximum price
     handleMax(e){
+        let max = e.target.value;
         this.setState({
-            maxPrice: e.target.value
+            max
         })
     }
+    //Set stat1 minimum
     handleSetStat1(e) {
+        let stat1 = e.target.value;
+        if (stat1 === "") stat1 = 0;
         this.setState({
-            stat1: e.target.value
-        })
-    }    
-    handleSetStat2(e) {
-        this.setState({
-            stat2: e.target.value
+            stat1
         })
     }
-
+    //Set stat2 minimum
+    handleSetStat2(e) {
+        let stat2 = e.target.value;
+        if (stat2 === "") stat2 = 0;
+        this.setState({
+            stat2
+        })
+    }
+    //Function to pass filter to parent
     updateFilter(){
-        if(
+        if( //IF any of the inputs are invalid, alert
             this.state.minPrice < 0 || 
             this.state.maxPrice < 0 ||
             this.state.stat1 < 0 ||
             this.state.stat2 < 0
         ) {
             alert("Invalid Input!");
-        } else {
+        } else { //If inputs are valid, call prop-function to pass values to parent
             this.props.updateFilter({
                 rarity: this.state.rarity,
                 type: this.state.type,
                 stat1: this.state.stat1,
                 stat2: this.state.stat2,
-                min: this.state.minPrice,
-                max: this.state.maxPrice
+                min: this.state.min,
+                max: this.state.max
             })
         }
     }
+    //function to set filter-state back to initial state
     removeFilter() {
         this.setState({
-            rarity: 0,
-            type: 0,
+            rarity: "0",
+            type: "0",
             minPrice: 0,
             maxPrice: 0,
             stat1: 0,
             stat2: 0
         })
         this.props.removeFilter();
+        this.props.toggleClose();
     }
+
+    //Represent Modal
     render() {
         return (
             <Modal isOpen={this.props.isOpen} toggle={this.props.toggleClose} size="sm" >

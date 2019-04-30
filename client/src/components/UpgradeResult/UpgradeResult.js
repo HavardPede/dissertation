@@ -8,23 +8,33 @@ import { drizzleConnect } from "drizzle-react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: UpgradeResult page
+* Description: Displays the result of any upgrade
+*/
 
 class UpgradeResult extends Component {
     constructor(props, context) {
         super(props);
+        //Fetch Drizzle
         this.drizzle = context.drizzle;
         this.contracts = context.drizzle.contracts;
+        //Bind functions
         this.isNewItemFetched = this.isNewItemFetched.bind(this);
     }
+    //When component is mounted, wait for an Upgrade-event on the blockchain
     componentDidMount = async () => {
-        console.log("mounted.", this.props.upgrade);
-        console.log("Item recieved?", this.isNewItemFetched())
+        //If upgrade is taking place
         if (this.props.upgrade === null) {
+            //Listen for upgrade-event related to the current address (see filter below)
             this.contracts.AuctionHouse.events.Upgrade({
                 filter: {
                     owner: this.props.account
                 }
             }, (err, result) => {
+                //If result found, pass the result to parent
                 if (!err) {
                     let output = result.returnValues;
                     this.props.handleUpgrade({
@@ -36,13 +46,16 @@ class UpgradeResult extends Component {
             )
         }
     }
+    //Call when component updates
     shouldComponentUpdate(prevProps) {
+        //If upgrade is not updated or upgrade failed, return false
         if (this.props.upgrade === prevProps.upgrade || !prevProps.upgrade.successful) {
             return false;
         } else {
             return true;
         }
     }
+    //function to check if the new item has been fetched as one of the users items
     isNewItemFetched() {
         let upgrade = this.props.upgrade;
         if ( upgrade !== null && upgrade !== undefined && upgrade.successful) {
@@ -59,6 +72,7 @@ class UpgradeResult extends Component {
     render() {
         let { upgrade } = this.props;
         if (
+            //If item not fetched yet, or result not retrieved, call loading-component
             upgrade === null ||
             (upgrade.successful && !this.isNewItemFetched())) {
             return (
@@ -89,6 +103,7 @@ class UpgradeResult extends Component {
                                 <DisplayItem
                                     items={this.props.items}
                                     itemID={upgrade.id}
+                                    extraClassName="successImage"
                                 />
                                 <Link to="/upgrade">
                                     <Button

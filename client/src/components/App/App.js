@@ -17,19 +17,35 @@ import Result from "../UpgradeResult/UpgradeResult";
 import Navbar from "../Navbar/Navbar";
 import Footer from "../Footer/Footer";
 
+
+
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: App
+* Description: The highest application-component. 
+*   This fetches main data from blockchain,
+*   and is the one calling the other components. Also stores router,
+*   defining which page to display for a given url.
+*/
 class App extends Component {
   constructor(props, context) {
     super(props);
+    //Fetch drizzle
     this.drizzle = context.drizzle;
     this.contracts = context.drizzle.contracts;
 
+    //Bind functions
     this.setBalance = this.setBalance.bind(this);
     this.generateItem = this.generateItem.bind(this);
     this.setItemKeyList = this.setItemKeyList.bind(this);
     this.setItemList = this.setItemList.bind(this);
     this.handleUpgrade = this.handleUpgrade.bind(this);
     this.handleResetUpgradeResult = this.handleResetUpgradeResult.bind(this);
+
+    //Variable used to convert rarity from int to string
     this.rarity = ["common", "rare", "epic", "legendary"];
+    //Apps state, storing keys and data
     this.state = {
       balanceKey: null,
       itemKeys: null,
@@ -39,12 +55,14 @@ class App extends Component {
     }
     this.upgradeResult = null;
   }
+  //When applications first mounts
   componentDidMount = async () => {
+    //Fetch balance and store key
     const balanceKey = this.contracts.AuctionHouse.methods.balanceOf.cacheCall(this.props.account);
     this.setState({ balanceKey });
     this.setBalance();
   };
-
+  //Whenever application updates, view what data updated, and handle accordingly
   componentDidUpdate(prevProps, prevState) {
     //If balanceOf is in drizzle-state, update local value
     if (this.props.state.balanceOf !== prevProps.state.balanceOf) {
@@ -54,6 +72,7 @@ class App extends Component {
     if (this.state.balance !== prevState.balance) {
       this.setItemKeyList();
     }
+    //If number of fetched items is updated, set itemlist
     if (this.props.state.getItemByIndex !== prevProps.state.getItemByIndex && this.state.balance > 0) {
       this.setItemList();
     }
@@ -90,6 +109,7 @@ class App extends Component {
       this.setState({ items });
     }
   }
+  //Function used to convert item fetched from blockchain, into an Item-object
   generateItem(key) {
     return new Item(
       key.id,
@@ -100,7 +120,7 @@ class App extends Component {
       key.onAuction
     );
   }
-
+  //functions to handle upgrade
   handleResetUpgradeResult() {
     this.setState({ upgrade: null });
   }
@@ -109,7 +129,7 @@ class App extends Component {
   }
 
   render() {
-    if (this.state.items.length === parseInt(this.state.balance)) {
+    if (this.state.items.length === parseInt(this.state.balance)) { //If all items are rendered
       return (
         <BrowserRouter>
           <Switch>
@@ -129,6 +149,7 @@ class App extends Component {
         </BrowserRouter>
       );
     }
+    //If all items are not rendered, display loader
     return (
       <BrowserRouter>
         <div>
@@ -140,7 +161,7 @@ class App extends Component {
     )
   }
 }
-
+//provide drizzle store as a prop
 const mapStateToProps = state => {
   return {
     account: state.accounts[0],

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Navbar from "../../Navbar/Navbar";
 import Footer from "../../Footer/Footer";
-import { Container, Row, Col, Button } from "reactstrap";
+import { Container, Row, Col, Button, Table } from "reactstrap";
 import AuctionHouseItems from "./AuctionHouseItems/AuctionHouseItems";
 import Filter from "./Filter/Filter";
 import SellItem from "./SellItem/SellItem";
@@ -11,15 +11,22 @@ import PropTypes from "prop-types";
 import { drizzleConnect } from "drizzle-react";
 import AHItem from "../../../utils/AuctionHouseItem";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: AuctionHouse
+* Description: Page that represents the auction-house. Calls all components listed inside the AuctionHouse-directory.
+*/
 
 class AuctionHouse extends Component {
     constructor(props, context) {
         super(props);
-
+        //Fetch Drizzle
         this.drizzle = context.drizzle;
         this.contracts = this.drizzle.contracts;
-
+        //Used to convert item-rarity from int to readable string
         this.rarity = ["common", "rare", "epic", "legendary"];
+        //Bind functions
         this.setAHBalance = this.setAHBalance.bind(this);
         this.setAHKeyList = this.setAHKeyList.bind(this);
         this.setAhInfoList = this.setAhInfoList.bind(this);
@@ -33,6 +40,16 @@ class AuctionHouse extends Component {
         this.handlePurchase = this.handlePurchase.bind(this);
         this.handleToggleMyAuctions = this.handleToggleMyAuctions.bind(this);
     }
+    //Store an initial filter
+    initialFilter = {
+        rarity: "0",
+        type: "0",
+        min: 0,
+        max: null,
+        stat1: 0,
+        stat2: 0
+    };
+    //Set initial state
     state = {
         //Used for fetching AH items
         AHBalanceKey: null,
@@ -45,7 +62,7 @@ class AuctionHouse extends Component {
         //Used for state of page
         itemSelected: -1,
         filterModal: false,
-        filter: null,
+        filter: this.initialFilter,
         sellItemModal: false,
         myAuctionsModal: false
     }
@@ -91,7 +108,7 @@ class AuctionHouse extends Component {
             key = this.contracts.AuctionHouse.methods.getAuctionByIndex.cacheCall(i);
             auctionKeys.push(key);
         }
-        this.setState({ auctionKeys });
+        this.setState({ auctionKeys, myAuctions: [], othersAuctions: [] });
     }
     //When all ah-item keys are fetched, store the returned values and fetch information about items
     setAhInfoList() {
@@ -103,7 +120,7 @@ class AuctionHouse extends Component {
 
             let infos = new Map();
             let itemKeys = [];
-            
+
             for (let i = 0; i < auctionKeys.length; i++) {
                 let itemInfo = getAuctionByIndex[auctionKeys[i]].value;
 
@@ -114,9 +131,9 @@ class AuctionHouse extends Component {
         }
     }
     //When information about data is fetched, store the information
-    setItemList() {   
+    setItemList() {
         let lastKey = this.state.itemKeys[this.state.itemKeys.length - 1];
-        if (lastKey in this.props.state.getItemByID && this.state.balance !== this.state.myAuctions.length + this.state.othersAuctions.length) {
+        if (lastKey in this.props.state.getItemByID && this.state.itemKeys.length !== this.state.myAuctions.length + this.state.othersAuctions.length) {
             let myAuctions = [];
             let othersAuctions = [];
 
@@ -128,13 +145,12 @@ class AuctionHouse extends Component {
                 }
                 else {
                     othersAuctions.push(auction);
-                }  
+                }
             }
-            this.setState({myAuctions, othersAuctions});
-
-            
+            this.setState({ myAuctions, othersAuctions });
         }
     }
+    //Function to represent an item as an Item-object
     generateItem(itemStats) {
         let auctionInfo = this.state.AHItemInfo.get(itemStats.id)
         return new AHItem(
@@ -149,88 +165,127 @@ class AuctionHouse extends Component {
         )
     }
 
-
     //Item selected in modal
     handleItemSelect(itemSelected) {
-        this.setState({itemSelected});
+        this.setState({ itemSelected });
     }
-
+    //set a given filter
     handleSetFilter(filter) {
         this.setState({ filter, filterModal: false });
     }
-
+    //Toggle filter-modal
     handleToggleFilter() {
         this.setState({
-            filter: null,
             filterModal: !this.state.filterModal
         });
     }
+    //Remove stored filter and set it to inital filter
     handleRemoveFilter() {
-        this.handleToggleFilter();
-        this.setState({ filter: null });
+        this.setState({ filter: this.initialFilter });
     }
+    //Toggle sell-item modal
     handleToggleSellItem() {
         this.setState({ sellItemModal: !this.state.sellItemModal })
     }
+    //Toggle my-auctions modal
     handleToggleMyAuctions() {
         this.setState({ myAuctionsModal: !this.state.myAuctionsModal })
     }
+    //Function to call Smart Contract-method "purchaseAuction" to purchase a selected auction
     handlePurchase() {
-        this.contracts.AuctionHouse.methods.purchaseAuction.cacheSend(this.state.itemSelected);
+        this.contracts.AuctionHouse.methods.purchaseAuction.cacheSend(this.state.itemSelected, this.props.account);
     }
 
+    //represent the auction house
     render() {
         return (
             <div>
                 <Navbar />
                 <Container id="mainAH">
-                    <Row>
+                    <Row>   
+                        {/*----------TITLE----------*/}
                         <Col className="text-center" id="AH-title">
                             <h1>AUCTION HOUSE</h1>
                         </Col>
                     </Row>
+
+                    {/*----------BUTTON ROW----------*/}
                     <Row id="button-row">
-                        <Col id="filter-button" className="text-left">
-                        </Col>
-                        <Col id="sell-button" className="text-right">
-                            <Button type="button" onClick={() => this.handleToggleFilter()} className="auction-house-button" >FILTER</Button>
-                            <Button type="button" onClick={this.handleToggleSellItem} className="auction-house-button"> SELL ITEM </Button>
+                        <Col id="AH-button" className="text-right">
+                            <Button type="button" id="filter-button" onClick={() => this.handleToggleFilter()} className="auction-house-button" >FILTER</Button>
+                            {this.state.filter !== this.initialFilter &&
+                                <Button outline
+                                    type="button" 
+                                    id="remove-filter-button" 
+                                    onClick={() => this.handleRemoveFilter()} 
+                                    className="auction-house-button" 
+                                >
+                                &#x274C; CURRENT FILTER 
+                                </Button>
+                            }
                             <Button type="button" onClick={this.handleToggleMyAuctions} className="auction-house-button"> MY AUCTIONS </Button>
+                            <Button type="button" onClick={this.handleToggleSellItem} className="auction-house-button"> SELL ITEM </Button>
                         </Col>
                     </Row>
+
+                    {/*----------AUCTION HOUSE ITEMS----------*/}
                     <Row>
                         <div id="auction-items-box">
-                            <AuctionHouseItems onItemSelect={this.handleItemSelect} itemSelected={this.state.itemSelected} filter={this.state.filter} items={this.state.othersAuctions} />
+                            <Table hover>
+                                <thead>
+                                    <tr>
+                                        <th><h5>RARITY</h5></th>
+                                        <th><h5>SELLER</h5></th>
+                                        <th><h5>STAT 1</h5></th>
+                                        <th><h5>STAT 2</h5></th>
+                                        <th><h5>PRICE</h5></th>
+                                    </tr>
+                                </thead>
+                                    <AuctionHouseItems
+                                        onItemSelect={this.handleItemSelect}
+                                        itemSelected={this.state.itemSelected}
+                                        filter={this.state.filter}
+                                        items={ [...this.state.othersAuctions, ...this.state.myAuctions]}
+                                        account={this.props.account}
+                                    />
+                            </Table>
                         </div>
                     </Row>
+
+                    {/*----------PURCHASE BUTTON----------*/}
                     <Row id="AH-purchase-button-row">
-                            {this.state.itemSelected !== -1 && 
-                                <Button type="button" onClick={this.handlePurchase} className="standard-button">Purchase Item</Button>    
-                            }
+                        {this.state.itemSelected !== -1 &&
+                            <Button type="button" onClick={this.handlePurchase} className="standard-button">Purchase Auction</Button>
+                        }
                     </Row>
                 </Container>
                 <Footer />
-
+                
+                {/*----------FILTER MODAL----------*/}
                 <Filter
                     isOpen={this.state.filterModal}
                     toggleClose={this.handleToggleFilter}
                     updateFilter={this.handleSetFilter}
                     removeFilter={this.handleRemoveFilter}
-                />                
+                />
+                {/*----------SELL ITEM MODAL----------*/}
                 <SellItem
                     isOpen={this.state.sellItemModal}
                     toggleClose={this.handleToggleSellItem}
                     items={this.props.items}
                 />
+                {/*----------MY AUCTIONS MODAL----------*/}
                 <MyAuctions
-                isOpen={this.state.myAuctionsModal}
-                toggleClose={this.handleToggleMyAuctions}
-                auctions={this.state.myAuctions}
+                    isOpen={this.state.myAuctionsModal}
+                    toggleClose={this.handleToggleMyAuctions}
+                    auctions={this.state.myAuctions}
+                    items={this.props.items}
                 />
             </div>
         )
     }
 }
+//Map Drizzle store to component through props
 const mapStateToProps = state => {
     return {
         account: state.accounts[0],

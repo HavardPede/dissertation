@@ -1,6 +1,13 @@
 import React, { Component } from "react";
 import "./Footer.css";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: Footer
+* Description: Universal footer-component
+*/
+
 export default class footer extends Component {
     render() {
         return (

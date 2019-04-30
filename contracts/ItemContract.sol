@@ -33,8 +33,8 @@ contract ItemContract is ERC721 {
 
     /*** CONSTANTS ***/
 
-    ///@dev Information about each stat. the first two values are increments for 
-    ///Stat 1 and 2, the last two values are base rolls for stat 1 and two
+    ///@notice Information about each stat. the first two values are increments for 
+    ///Stat 1 and 2, the last two values are base rolls for stat 1 and 2
     uint8[4][6] internal statInformation = [
         [50, 15, 100, 30], //Amulet
         [50, 5, 150, 10],  //Helmet
@@ -50,7 +50,7 @@ contract ItemContract is ERC721 {
 
     /*** TYPES ***/
 
-    ///@dev The struct for the item token. Each item is an instance of this struct.
+    ///@notice The struct for the item token. Each item is an instance of this struct.
     struct Item {
         uint id;
         uint equipmentType; 
@@ -78,7 +78,7 @@ contract ItemContract is ERC721 {
         address payable seller;  
     }
 
-    ///@dev The user struct. Stores Users items an a map of items to index
+    ///@notice The user struct. Stores Users items an a map of items to index
     struct User {
         Item[] items;
         mapping(uint => uint) indexOfItem;
@@ -97,15 +97,12 @@ contract ItemContract is ERC721 {
     ///@notice store current amount of items
     uint public numberOfItems;
     
-
     ///@dev Maps an account address to a user-struct for that user
     mapping(address => User) internal users; 
 
-
-    ///@dev maps item id to its owner
-    ///@notice in a later iteration of the game, this might be changed to external to save gas
+    ///@notice maps item id to its owner
+    ///@dev in a later iteration of the game, this might be changed to external to save gas
     mapping(uint => address) internal ownerOfItem;
-
 
     ///@notice stores which account address an item is approved for
     mapping(uint => address) public itemApprovals;
@@ -157,13 +154,13 @@ contract ItemContract is ERC721 {
         onAuction = item.onAuction;
     }
 
+    ///@notice function to transfer the ownership of an item between two users.
+    ///@dev This function is called internally and changes all relevant data structures and emits a transfer event
     function transferOwnership(address _from, address _to, uint _id) internal {
         //Store item locally
         User storage from = users[_from];
         Item memory item = from.items[from.indexOfItem[_id]];
-
-        require(users[_from].items.length > 0, "Account must have items to transfer from");
-
+        
         //remove item from users list of items
         if (from.items.length > 1) {
             Item memory lastItem = from.items[from.items.length - 1];
@@ -176,7 +173,7 @@ contract ItemContract is ERC721 {
         users[_to].indexOfItem[ids] = users[_to].items.push(item) - 1;
 
         //Set owner of item
-        ownerOfItem[ids] = _to;
+        ownerOfItem[_id] = _to;
 
         //remove approvals for this item
         if (itemApprovals[_id] != address(0x0)) {
@@ -262,7 +259,7 @@ contract ItemContract is ERC721 {
         uint _id1, 
         uint _id2, 
         uint _id3
-    ) public {
+    ) internal {
         uint rarity = users[_account].items[users[_account].indexOfItem[_id1]].rarity;
         uint random = uint(keccak256(abi.encodePacked(now, msg.sender, ids)));
     

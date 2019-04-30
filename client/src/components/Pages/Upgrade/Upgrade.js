@@ -9,14 +9,21 @@ import PropTypes from "prop-types";
 import { drizzleConnect } from "drizzle-react";
 import { Link } from "react-router-dom";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: Upgrade page
+* Description: Displays 3 boxes that allow the user to select 3 items of same rarity. 
+*   These items are destroyed and a new item might be minted, of 1 higher rarity then the one selected. 
+*/
 
 class Upgrade extends Component {
     constructor(props, context) {
         super(props);
-
+        //Fetch Drizzle
         this.drizzle = context.drizzle;
         this.contracts = this.drizzle.contracts;
-
+        //Bind functions
         this.toggle = this.toggle.bind(this);
         this.toggleClose = this.toggleClose.bind(this);
         this.handleItemSelect = this.handleItemSelect.bind(this);
@@ -25,20 +32,21 @@ class Upgrade extends Component {
         this.handleRemoveItem = this.handleRemoveItem.bind(this);
         this.handleUpgradeItems = this.handleUpgradeItems.bind(this);
     }
+    //Set initial state
     state = {
         modal: false,
         boxSelected: "", //Index of box selected, number
         itemSelected: "",
         chosenItems: [-1, -1, -1]
     }
-    //Open modal
+    //Open item modal
     toggle(e) {
         this.setState({ boxSelected: e.currentTarget.getAttribute("boxindex") });
         this.setState(prevState => ({
             modal: !prevState.modal
         }));
     }
-    //Close modal
+    //Close item modal
     toggleClose() {
         this.setState(prevState => ({
             modal: !prevState.modal,
@@ -68,7 +76,7 @@ class Upgrade extends Component {
     }
     //function to upgrade 3 items
     handleUpgradeItems() {
-        this.contracts.AuctionHouse.methods.upgradeItems
+        this.contracts.AuctionHouse.methods.upgrade
             .cacheSend(
                 this.props.account,
                 parseInt(this.state.chosenItems[0]),

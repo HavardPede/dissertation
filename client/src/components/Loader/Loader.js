@@ -5,6 +5,14 @@ import contract from "../../contracts/ItemOwnership.json";
 import PropTypes from "prop-types";
 import getWeb3 from "../../utils/getWeb3";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: Loader
+* Description: Loading page used before content is represented. 
+* Disclaimer: Most of this code was written by Truffle Suite Team: https://github.com/truffle-box/drizzle-box
+*   Only render() was fully written by author.
+*/
 class Loader extends Component {
     constructor(props, context) {
       super(props);

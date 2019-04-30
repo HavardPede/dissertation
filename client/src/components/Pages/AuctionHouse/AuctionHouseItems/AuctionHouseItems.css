@@ -1,19 +1,8 @@
 .auction-house-item{
-    border: 2px solid black;
-    width: 180px;
-    height: 185px;
-    margin:4px;
-    margin-bottom: 10px;
-    padding:15px;
-    padding-bottom: 0px;
-    font-weight: bold;
-    overflow:hidden;
-}
-.auction-house-item:hover{
-    border: 2px solid red;
+    height: 60px;
 }
 .AH-item-selected{
-    border: 2px solid red;
+   outline: 2px solid red;
 }
 #all-ah-items{
     display:flex;
@@ -22,15 +11,28 @@
     height:100%;
 }
 .auction-image{
-    margin-bottom: 10px;
+    border: 1px solid black;
+    height: 50px;
+    width: 70px;
+    margin: auto;
 }
-.auction-price-row{
-    border-top: 2px solid black;
-    margin-top: 20px;
-    color:white;
-    background-color: #4B4B4B;
+.auction-image img {
+    height: 100%;
 }
 #AH-purchase-button-row {
     display:flex;
     justify-content: center;
+}
+.auction-item-center-col {
+    padding: 0px;
+    vertical-align: middle!important;
+}
+th {
+    padding: 3px!important;
+}
+tbody {
+    margin: 1000px!important;
+}
+.address-text {
+    font-size: 12px;
 }

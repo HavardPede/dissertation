@@ -5,12 +5,20 @@ import PropTypes from "prop-types";
 import { drizzleConnect } from "drizzle-react";
 import { Button, Container, Row, Col } from "reactstrap";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: Items
+* Description: Represents the inventory of the account. 
+*/
+
 class items extends Component {
     constructor(props, context) {
         super(props)
-
+        //Fetch drizzle 
         this.drizzle = context.drizzle;
         this.contracts = this.drizzle.contracts;
+        //Bind functions
         this.handlePresentItem = this.handlePresentItem.bind(this);
         this.handleItemSelect = this.handleItemSelect.bind(this);
         this.handleEquipSelect = this.handleEquipSelect.bind(this);
@@ -19,12 +27,19 @@ class items extends Component {
         this.createItem = this.createItem.bind(this);
         this.type = ["Amulet", "Helmet", "Trinket", "Weapon", "Body", "Shield"];
     }
+    //Initial state for component
     state = {
         itemSelected: -1,
         rarity: "0",
         type: "0",
         showRaritySelector: true
     }
+    /*
+    * Called when component mounts. 
+    * Check is used for upgrade-page.
+    * if one or more items are chosen for upgrade, only show items of its rarity.
+    * If caller is not upgrade-page, empty chosenItems-array should be passed as prop
+    */
     componentDidMount = async () => {
         let id = this.props.chosenItems.find(item => {
             return item !== -1;
@@ -61,7 +76,7 @@ class items extends Component {
     }
     createItem() {
         for(let i = 0; i <= 3; i++) {
-            this.contracts.AuctionHouse.methods.createItem.cacheSend(4, 11, 50, 2, 3, this.props.account);
+            this.contracts.AuctionHouse.methods.createItem.cacheSend(5, 4, 50, 2, 1, this.props.account);
         }  
     }
 
@@ -160,7 +175,6 @@ class items extends Component {
     }
 }
 const mapStateToProps = state => {
-    console.log(state)
     return {
         account: state.accounts[0],
         state: state.contracts.AuctionHouse

@@ -45,7 +45,7 @@ contract ERC165Implementation is ERC165 {
 ///@author Håvard Pedersen, B6056952.
 ///@dev This will implement and make use of
 /// functions, events, and storages defined in its parent-contracts.
-contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Implementation {
+contract ItemOwnership is ItemContract, ERC721TokenReceiver, ERC165Implementation {
     address internal owner;
     constructor () public {
         owner = msg.sender;
@@ -282,7 +282,8 @@ contract ItemOwnership is ERC721, ItemContract, ERC721TokenReceiver, ERC165Imple
         return getItem(_owner, users[_owner].indexOfItem[_id]);
 
     }
-    
+    ///@notice function to select 3 items from a given account. This deletes the 3 items and has a chance of producing
+    ///an item of 1 higher rarity than the previous one.
     function upgrade(address _owner, uint _id1, uint _id2, uint _id3) 
     external {
         User storage user = users[_owner];

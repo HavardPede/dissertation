@@ -1,0 +1,22 @@
+.my-auctions-titles {
+    border:2px solid #4B4B4B;
+    padding: 5px;
+    margin: 0;
+}
+h4 {
+    margin: 5px;
+}
+.my-auctions-row {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-top: 2px solid #4B4B4B;
+    text-align: center;
+}
+.my-auctions-item {
+    border: 1px solid #4B4B4B;
+    height: 70px;
+}
+.my-auctions-button-col {
+    margin: auto;
+}

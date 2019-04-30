@@ -3,6 +3,13 @@ import { Container, Row, Col } from "reactstrap";
 import "./logged-in.css";
 import { drizzleConnect } from "drizzle-react";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: Logged-in
+* Description: Display user's account address
+*/
+
 class Logged extends Component {
     render() {
         return (

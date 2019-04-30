@@ -3,6 +3,14 @@ import { Container, Row, Col } from "reactstrap";
 import "./item-grid.css";
 import EquippedItem from "../EquippedItem/EquippedItem"
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: ItemGrid
+* Description: Displays a grid of 6 boxes. This represents all equipped items
+*   This is not in use, as described in essay. 
+*   NB! TO IMPLEMENT TO STABLE VERSION, EquippedItem needs alterations
+*/
 export default class itemGrid extends Component {
     render() {
         return (

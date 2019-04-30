@@ -6,13 +6,20 @@ import { drizzleConnect } from "drizzle-react";
 import Items from "../../../items/items";
 import DisplayItem from "../../../DisplayItem/DisplayItem";
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: SellItem
+* Description: Modal to allow user to sell an item they own on the AuctionHouse
+*/
+
 class SellItem extends Component {
     constructor(props, context) {
         super(props);
-
+        //Fetch drizzle
         this.drizzle = context.drizzle;
         this.contracts = this.drizzle.contracts;
-
+        //Bind functions
         this.handleItemSelect = this.handleItemSelect.bind(this);
         this.handlePriceSelect = this.handlePriceSelect.bind(this);
         this.handleTimeSelect = this.handleTimeSelect.bind(this);
@@ -21,6 +28,7 @@ class SellItem extends Component {
         this.handleRemoveItem = this.handleRemoveItem.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
     }
+    //Initialize state
     state = {
         itemID: "-1",
         price: 0,
@@ -38,21 +46,23 @@ class SellItem extends Component {
             time: e.target.value * 3600
         })
     }
-
+    //Set price
     handlePriceSelect(e) {
         this.setState({
             price: e.target.value
         })
-    }    
+    }
+    //Remove selected choices by resetting state to initial state.
     handleCancel() {
         this.setState({
-            itemID: 1,
+            itemID: "-1",
             price: 0,
             time:  -1,
-            itemModal: false
+            itemModal: false,
         });
         this.props.toggleClose();
     }
+    //Function to call Smart Contract-method "startAuction" to sell an auction with the give choices
     handleSellItem() {
         let { itemID, price, time } = this.state;
         if (
@@ -62,21 +72,23 @@ class SellItem extends Component {
         ) {
             this.contracts.AuctionHouse.methods.startAuction
             .cacheSend(itemID, price, time, this.props.account);
+            this.handleCancel();
         } else {
             alert("Invalid inputs");
         }
-        this.props.toggleClose();
     }
+    //Function to toggle Item-modal
     toggleItemModal() {
         this.setState({itemModal: !this.state.itemModal})
     }
+    //Function to remove selected item
     handleRemoveItem() {
         this.setState({
             itemModal: !this.state.itemModal,
             itemID: -1
         })
     }
-
+    //Display modal
     render() {
         return (
             <Modal isOpen={this.props.isOpen} toggle={this.props.toggleClose} size="sm" >
@@ -86,7 +98,7 @@ class SellItem extends Component {
                 <ModalBody> 
                 
                 <Row className="filter-row align-middle"> 
-                    <Col className="col-5 text-center align-middle">
+                    <Col className="col-5 text-center sell-modal-center-col">
                         item:
                     </Col> 
                     <Col> 
@@ -96,20 +108,20 @@ class SellItem extends Component {
                     </Col> 
                 </Row> 
                 <Row className="filter-row align-middle"> 
-                    <Col className="col-6 text-center align-middle">
+                    <Col className="col-6 text-center sell-modal-center-col">
                         Price in Finney: (1/1000 ETH)
 
                     </Col> 
                     <Col> 
-                        <Input type="number" value={this.state.price} onChange={this.handlePriceSelect} name="price" className="price-input-sell" />
+                        <Input type="number" value={this.state.price} onChange={this.handlePriceSelect} name="price" id="price-input-sell" />
                     </Col> 
                 </Row> 
                 <Row className="filter-row align-middle"> 
-                    <Col className="col-5 text-center align-middle">
+                    <Col className="col-5 text-center sell-modal-center-col">
                         Duration: 
                     </Col> 
                     <Col> 
-                        <ButtonGroup>
+                        <ButtonGroup id="time-input-sell">
                         <Button color="secondary" onClick={this.handleTimeSelect} value={24} active={this.state.time === 86400}>24H</Button>
                         <Button color="secondary" onClick={this.handleTimeSelect} value={48} active={this.state.rSelected === 172800}>48H</Button>
                         </ButtonGroup>
@@ -145,6 +157,7 @@ class SellItem extends Component {
         )
     }
 }
+//Map drizzle store to component via props
 const mapStateToProps = state => {
     return {
         account: state.accounts[0],

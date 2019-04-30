@@ -3,6 +3,13 @@ import { Navbar, Nav, NavItem, NavbarBrand, NavLink } from "reactstrap";
 import { Link } from "react-router-dom";
 import './Navbar.css';
 
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: Navbar
+* Description: Universal navigation-bar component
+*/
+
 export default class Navb extends Component {
     render() {
         return (

@@ -5,15 +5,20 @@ import Items from "../../items/items";
 import { Container, Row, Col } from "reactstrap";
 import "./inventory.css";
 
-
-
+/*
+* Author: Håvard Pedersen 
+* Last edit: 30.04.2019
+* Title: Invetory page
+* Description: Displays all items owned by the user
+*/
 
 export default class Inventory extends Component {
     constructor(props) {
         super(props);
-
+        //Bind functions
         this.handleItemSelect = this.handleItemSelect.bind(this);
     }
+    //Set initial state
     state = {
         ItemSelected: ""
     }
@@ -26,6 +31,7 @@ export default class Inventory extends Component {
         this.setState({ ItemSelected: buff });
     }
 
+    //Display invetory-box
     render() {
         return (
             <div>
@@ -41,9 +47,6 @@ export default class Inventory extends Component {
                                 parentPage="inventory"
                                 chosenItems={[]}  
                                 />
-                            {this.state.ItemSelected !== "" && <button type="button" className="standard-button">
-                                Equip/Unequip Item
-                        </button>}
                         </Col>
                     </Row>
                 </Container>

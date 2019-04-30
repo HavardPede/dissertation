@@ -21,13 +21,16 @@ contract("AuctionHouse", accounts => {
     const instance = await AuctionHouse.deployed();
     await instance.createItem(4, 1, 50, 2, 2, accounts[0]);
     await instance.startAuction(2, 1000, 86400, accounts[0]);
-    await instance.purchaseAuction.sendTransaction(2, {value: 1000, from:accounts[1]});
+    await instance.createItem(4, 1, 50, 2, 2, accounts[0]);
+    await instance.startAuction(3, 1000, 86400, accounts[0]);
+    await instance.purchaseAuction.sendTransaction(2, accounts[1], {from: accounts[1]});
     
-    assert.equal(await instance.balanceOf(accounts[1]), 1, "Did not remove 1 auction");
+    assert.equal(1, await instance.balanceOf(accounts[1]), "Did not remove 1 auction");
   })
-  it("Should set correct address when creating an item", async () => {
+
+  it("should set correct owner of item when auction is purchased", async () => {
     const instance = await AuctionHouse.deployed();
-    await instance.createItem(1, 1, 1, 1, 1, accounts[0]);
-    assert.equal(await instance.ownerOf(3), accounts[0], "did not set correct address");
+    assert.equal(accounts[1], await instance.ownerOf(2), "New owner is not set");
   })
+
 });

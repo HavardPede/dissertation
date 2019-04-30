@@ -1,1 +1,9 @@
 
+.displayed-item:hover .tooltip{
+    display:block;
+}
+.displayed-item {
+    height: 100%;
+    width: 100%;
+    background-color: red;
+}
