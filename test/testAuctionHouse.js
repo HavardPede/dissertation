@@ -22,8 +22,8 @@ contract("AuctionHouse", accounts => {
     await instance.createItem(4, 1, 50, 2, 2, accounts[0]);
     await instance.startAuction(2, 1000, 86400, accounts[0]);
     await instance.createItem(4, 1, 50, 2, 2, accounts[0]);
-    await instance.startAuction(3, 1000, 86400, accounts[0]);
-    await instance.purchaseAuction.sendTransaction(2, accounts[1], {from: accounts[1]});
+    await instance.startAuction(3, 1, 86400, accounts[0]);
+    await instance.purchaseAuction.sendTransaction(2, accounts[1], {from: accounts[1], value:1000 * 1000000000000000});
     
     assert.equal(1, await instance.balanceOf(accounts[1]), "Did not remove 1 auction");
   })
@@ -33,4 +33,10 @@ contract("AuctionHouse", accounts => {
     assert.equal(accounts[1], await instance.ownerOf(2), "New owner is not set");
   })
 
+  it("Shoud transfer the currency to the seller", async() => {
+    const instance = await AuctionHouse.deployed();
+    let balanceBefore = await web3.eth.getBalance(accounts[0]);
+    await instance.purchaseAuction.sendTransaction(3, accounts[1], {from: accounts[1], value: 1 * 1000000000000000});
+    assert.equal(await web3.eth.getBalance(accounts[0]), parseInt(balanceBefore) + 1000000000000000, "Balance of seller didnt change");
+  })
 });

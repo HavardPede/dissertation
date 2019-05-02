@@ -193,7 +193,14 @@ class AuctionHouse extends Component {
     }
     //Function to call Smart Contract-method "purchaseAuction" to purchase a selected auction
     handlePurchase() {
-        this.contracts.AuctionHouse.methods.purchaseAuction.cacheSend(this.state.itemSelected, this.props.account);
+        let value = null;
+        this.state.othersAuctions.forEach(auction => {
+            if(auction.id = this.state.itemSelected) {
+                value = auction.price;
+            }
+        })
+        console.log("the value",  this.drizzle.web3.utils.toWei(value,"finney"));
+        this.contracts.AuctionHouse.methods.purchaseAuction.cacheSend(this.state.itemSelected, this.props.account, {value: (2, this.drizzle.web3.utils.toWei(value,"finney"))});
     }
 
     //represent the auction house
@@ -255,6 +262,7 @@ class AuctionHouse extends Component {
                     {/*----------PURCHASE BUTTON----------*/}
                     <Row id="AH-purchase-button-row">
                         {this.state.itemSelected !== -1 &&
+                            this.state.myAuctions.find(auction => auction.id == this.state.itemSelected) === undefined &&
                             <Button type="button" onClick={this.handlePurchase} className="standard-button">Purchase Auction</Button>
                         }
                     </Row>

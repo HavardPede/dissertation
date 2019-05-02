@@ -4,7 +4,8 @@ import "./ItemOwnership.sol";
 
 
 contract AuctionHouse is ItemOwnership {
-
+    constructor () public payable {}
+    function () external payable {}
 
     /*** EVENTS ***/
 
@@ -80,7 +81,6 @@ contract AuctionHouse is ItemOwnership {
 
 
 
-
     /*** SKEPTICAL METHODS ***/
 
     ///@notice function to create a new auction. This removes the item from the users array of items.
@@ -108,7 +108,6 @@ contract AuctionHouse is ItemOwnership {
             _duration == 172800,
             "Time must be 24 or 48 hours"
         );
-
         //check that input doesnt overflow. The input-size for the values does not match struct-size
         //This is done purposely to allow for a return message if input-values are too high.
         require(_price == uint256(uint128(_price)), "Too high price");
@@ -145,8 +144,8 @@ contract AuctionHouse is ItemOwnership {
     ///@notice function to buy item that is on auction and transfer it to msg.sender
     ///@param _id is the id of the item being bought
     function purchaseAuction(uint _id, address _buyer) external payable {
-
-        Auction storage auction = auctions[auctionIndexes[_id]];
+        
+        Auction memory auction = auctions[auctionIndexes[_id]];
         require(
             msg.sender == _buyer ||
             approvedForAll[_buyer][msg.sender], 
@@ -157,13 +156,15 @@ contract AuctionHouse is ItemOwnership {
         
         //remove item from auctionhouse and transfer ownership
         removeAuction(_id, _buyer);
-
-        //We fend off re-entrancy attacks by transferring the item and taking it off the
-        //auction house before transferring the currency.
-        auction.seller.transfer(auction.price);
+        
+        require(msg.value == auction.price * 1000000000000000, "wrong value attached to message");
+        //This solution of transferring an auction prevents re-entrancy attacks by 
+        //transferring the item and taking it off the auction house before transferring the currency.
+        //Converts from Wei to Finney
+        address(auction.seller).transfer(msg.value);
         
         //send out event
-        emit AuctionPurchased(_id, auction.price, auction.seller, msg.sender);
+        emit AuctionPurchased(_id, auction.price, auction.seller, _buyer);
     }
 
     function getAuctionByIndex(uint _index) public view returns (
